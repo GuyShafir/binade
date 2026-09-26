@@ -1,0 +1,41 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-26B-A4B-it/snapshots/4d7ae4984b7db7de8f8457170b3f1a419ee76d52",
+  "repo_id": "google/gemma-4-26B-A4B-it",
+  "revision": "4d7ae4984b7db7de8f8457170b3f1a419ee76d52"
+ },
+ "packed": "models/gemma-4-26B-A4B-it-binade",
+ "git": {
+  "commit": "629104b1e1b5cfe546dcd61b89c6b79e2738d930",
+  "dirty": false
+ },
+ "pack_git": "629104b1e1b5cfe546dcd61b89c6b79e2738d930",
+ "binade": {
+  "quant_method": "binade",
+  "version": "2",
+  "tile": 128
+ },
+ "tensors_checked": 1013,
+ "tensors_packed": 266,
+ "missing": [],
+ "extra": [],
+ "mismatched_elements": 0,
+ "input_bytes": 51612009916,
+ "output_bytes": 35051774176,
+ "classes": {
+  "embed": {
+   "tensors": 1,
+   "numel": 738197504,
+   "bits": 7923107328,
+   "bits_per_weight": 10.7330454046076
+  },
+  "linear": {
+   "tensors": 265,
+   "numel": 24483430400,
+   "bits": 263138368288,
+   "bits_per_weight": 10.74761028127823
+  }
+ },
+ "pack_seconds": 1970.762220738,
+ "check_seconds": 74.1885769319997
+}

@@ -1,0 +1,9 @@
+{
+ "repo": "google/gemma-4-26B-A4B-it",
+ "revision": "4d7ae4984b7db7de8f8457170b3f1a419ee76d52",
+ "files": {
+  "model-00001-of-00002.safetensors": "1127684971bbca40465435a5cad69d67ad603bf5e61c6dfd5561fae4a3bcfdb3",
+  "model-00002-of-00002.safetensors": "aab47033e1e8a492ef8e581efae1cf36478d0433567e7729b3c1728bc8970db7"
+ },
+ "matches_hub": true
+}

@@ -1,0 +1,8 @@
+{
+ "repo": "google/gemma-4-E4B-it",
+ "revision": "ee0ef6023621cff504d758262d4e04895a5af4a2",
+ "files": {
+  "model.safetensors": "cfbd3d2f1cd71bd471c37fe2bf8546d5028d41e5736f64e1ca6c6b8893125503"
+ },
+ "matches_hub": true
+}

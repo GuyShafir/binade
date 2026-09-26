@@ -1,0 +1,41 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-E4B-it/snapshots/ee0ef6023621cff504d758262d4e04895a5af4a2",
+  "repo_id": "google/gemma-4-E4B-it",
+  "revision": "ee0ef6023621cff504d758262d4e04895a5af4a2"
+ },
+ "packed": "models/gemma-4-E4B-it-xp",
+ "git": {
+  "commit": "07601d3d8ca8077a61eb23d3df4d84623903e09a",
+  "dirty": false
+ },
+ "pack_git": "07601d3d8ca8077a61eb23d3df4d84623903e09a",
+ "xp": {
+  "quant_method": "xp",
+  "version": "1",
+  "tile": 128
+ },
+ "tensors_checked": 2130,
+ "tensors_packed": 380,
+ "missing": [],
+ "extra": [],
+ "mismatched_elements": 0,
+ "input_bytes": 15992595884,
+ "output_bytes": 13225858937,
+ "classes": {
+  "embed": {
+   "tensors": 1,
+   "numel": 671088640,
+   "bits": 7563452176,
+   "bits_per_weight": 11.270422005653382
+  },
+  "linear": {
+   "tensors": 379,
+   "numel": 4027842560,
+   "bits": 45481231000,
+   "bits_per_weight": 11.291710220173055
+  }
+ },
+ "pack_seconds": 73.26646854099818,
+ "check_seconds": 64.58577154198429
+}

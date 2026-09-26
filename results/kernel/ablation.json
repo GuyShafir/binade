@@ -1,0 +1,50 @@
+{
+ "git": {
+  "commit": "13cd53c74cf5fbf53df7b4d292810c499c2d7914",
+  "dirty": false
+ },
+ "base": {
+  "tm": 1,
+  "prologue": true,
+  "fast3": true,
+  "bm": 8
+ },
+ "rows": [
+  {
+   "kind": "gate_up_proj",
+   "shape": [
+    15360,
+    3840
+   ],
+   "efficiency": {
+    "v1": 0.7302554148769778,
+    "noload": 0.894609189342921,
+    "noesc": 0.9528401279762544
+   }
+  },
+  {
+   "kind": "down_proj",
+   "shape": [
+    3840,
+    15360
+   ],
+   "efficiency": {
+    "v1": 0.7000467263284429,
+    "noload": 0.8410443384823888,
+    "noesc": 0.8260043803525883
+   }
+  },
+  {
+   "kind": "q_proj",
+   "shape": [
+    4096,
+    3840
+   ],
+   "efficiency": {
+    "v1": 0.7184891015208127,
+    "noload": 0.8407009525410318,
+    "noesc": 0.8572711615197771
+   }
+  }
+ ]
+}

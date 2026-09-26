@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "binade"
+version = "0.0.1"
+description = "Bit-exact compression of BF16 LLM weights for Apple Silicon (MLX), with an experimental CUDA port"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11"
+dependencies = [
+    "numpy==2.5.3",
+    "safetensors==0.8.0",
+    "huggingface-hub==1.33.0",
+    "mlx==0.32.2",
+    "mlx-lm==0.31.3",
+    "matplotlib==3.11.2",
+]
+
+[project.scripts]
+binade = "binade.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1"]
+
+[tool.setuptools.packages.find]
+include = ["binade*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
