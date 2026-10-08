@@ -1,0 +1,12 @@
+\begin{tabular}{rrrrrr}
+\toprule
+rows & BF16 ms & fused ms & rebuild ms & runtime ms & runtime/BF16 \\
+\midrule
+16 & 202 & 164 & 257 & 155 & 1.30$\times$ \\
+32 & 174 & 213 & 273 & 194 & 0.90$\times$ \\
+64 & 194 & 298 & 289 & 253 & 0.77$\times$ \\
+128 & 295 & 430 & 395 & 379 & 0.78$\times$ \\
+512 & 909 & 1191 & 1019 & 1019 & 0.89$\times$ \\
+2048 & 3457 & 4623 & 3610 & 3626 & 0.95$\times$ \\
+\bottomrule
+\end{tabular}

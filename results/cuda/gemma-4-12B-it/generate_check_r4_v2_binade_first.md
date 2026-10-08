@@ -1,6 +1,6 @@
 # Binade greedy decode check (r4 runtime): google/gemma-4-12B-it
 
-`scripts/generate_check.py` @ `629104b`, 256 greedy tokens, prompt of 40 tokens.
+`scripts/generate_check.py` @ `24743c8`, 256 greedy tokens, prompt of 40 tokens.
 
 **PASS**: prompt logits identical over the full vocabulary: True; a second prompt pass repeats them bit for bit (BF16, Binade): True, True; token ids identical: True.
 
@@ -8,8 +8,8 @@ Checkpoint tensors without a model parameter, dropped by both loaders (listed in
 
 | model | load s | prompt pass s (first, second) | decode tok/s (after the first token) | tok/s incl. prompt | peak GB |
 |---|---|---|---|---|---|
-| BF16 (mlx_lm) | 4.8 | 0.03, 0.03 | 54.98 | 54.36 | 24.1 |
-| Binade format 2, R4 runtime (Metal kernel for single-row steps) | 21.8 | 7.69, 0.09 | 59.06 | 21.99 | 20.0 |
+| BF16 (mlx_lm) | 4.9 | 0.03, 0.03 | 54.95 | 54.31 | 24.1 |
+| Binade format 2, R4 runtime (R4 kernel for single-row steps) | 21.8 | 7.14, 0.06 | 58.83 | 21.99 | 23.9 |
 
 Decode speedup vs BF16: 1.07x.
 

@@ -1,0 +1,88 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-12B-it/snapshots/707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+  "repo_id": "google/gemma-4-12B-it",
+  "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7"
+ },
+ "packed": "models/gemma-4-12B-it-binade-v2",
+ "git": {
+  "commit": "3fc132493c9e36b5e855e2c877ad4ee280566692",
+  "dirty": false
+ },
+ "mlx": "0.32.2",
+ "device": "Apple M4 Max",
+ "dataset": {
+  "repo": "Salesforce/wikitext",
+  "file": "wikitext-2-raw-v1/test-00000-of-00001.parquet"
+ },
+ "args": {
+  "original": "google/gemma-4-12B-it",
+  "packed": "models/gemma-4-12B-it-binade-v2",
+  "q8": "True",
+  "fused": "True",
+  "windows": "32",
+  "window_tokens": "512",
+  "prompts": "32",
+  "prompt_tokens": "48",
+  "gen_tokens": "128",
+  "out": "None"
+ },
+ "variants": {
+  "bf16": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 729.4151259650439,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 40.4003780829953,
+   "gen_s": 249.61313437500212,
+   "peak_gb": 25.322573182
+  },
+  "binade": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 729.4151259650439,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 44.472222167001746,
+   "gen_s": 252.14459995799552,
+   "peak_gb": 21.065354131
+  },
+  "binade_fused": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 729.4151259650439,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 47.09269954099727,
+   "gen_s": 241.95560362499964,
+   "peak_gb": 19.422252113
+  },
+  "q8": {
+   "positions": 16352,
+   "positions_bit_identical": 0,
+   "argmax_agreement": 0.8496819960861057,
+   "perplexity": 739.1254812128366,
+   "max_abs_target_logprob_diff": 20.26331329345703,
+   "generations": 32,
+   "generations_identical": 0,
+   "tokens_identical": 0.30517578125,
+   "mean_first_divergence": 23.4,
+   "windows_s": 40.54131062500528,
+   "gen_s": 143.1295590410009,
+   "peak_gb": 14.667972328
+  }
+ }
+}

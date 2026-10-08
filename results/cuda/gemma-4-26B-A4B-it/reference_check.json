@@ -1,0 +1,35 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-26B-A4B-it/snapshots/4d7ae4984b7db7de8f8457170b3f1a419ee76d52",
+  "repo_id": "google/gemma-4-26B-A4B-it",
+  "revision": "4d7ae4984b7db7de8f8457170b3f1a419ee76d52"
+ },
+ "git": {
+  "commit": "d796fce5afdf557c0c12bfd5388c1fc1cf6bc08e",
+  "dirty": false
+ },
+ "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+ "args": {
+  "model": "google/gemma-4-26B-A4B-it",
+  "hf_python": "~/hfref/bin/python",
+  "device": "cuda",
+  "dtypes": "bfloat16",
+  "tokens": "512",
+  "out": "results/cuda/gemma-4-26B-A4B-it"
+ },
+ "dtypes": {
+  "bfloat16": {
+   "tokens": 511,
+   "perplexity_reference": 6085.052734375,
+   "perplexity_mlx": 7504.6767578125,
+   "argmax_agreement": 0.7455968688845401,
+   "nll_abs_diff_mean": 1.137430191040039,
+   "nll_abs_diff_p99": 7.659183979034424,
+   "nll_abs_diff_max": 17.80805778503418,
+   "nll_correlation": 0.9656454286884744,
+   "transformers": "5.18.0",
+   "torch": "2.14.1+cu130",
+   "mlx": "0.32.2"
+  }
+ }
+}

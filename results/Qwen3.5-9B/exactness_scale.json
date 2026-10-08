@@ -1,0 +1,88 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--Qwen--Qwen3.5-9B/snapshots/c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "repo_id": "Qwen/Qwen3.5-9B",
+  "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a"
+ },
+ "packed": "models/Qwen3.5-9B-binade",
+ "git": {
+  "commit": "3fc132493c9e36b5e855e2c877ad4ee280566692",
+  "dirty": false
+ },
+ "mlx": "0.32.2",
+ "device": "Apple M4 Max",
+ "dataset": {
+  "repo": "Salesforce/wikitext",
+  "file": "wikitext-2-raw-v1/test-00000-of-00001.parquet"
+ },
+ "args": {
+  "original": "Qwen/Qwen3.5-9B",
+  "packed": "models/Qwen3.5-9B-binade",
+  "q8": "True",
+  "fused": "True",
+  "windows": "32",
+  "window_tokens": "512",
+  "prompts": "32",
+  "prompt_tokens": "48",
+  "gen_tokens": "128",
+  "out": "None"
+ },
+ "variants": {
+  "bf16": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 8.557840842838413,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 29.003760167004657,
+   "gen_s": 165.10556212499796,
+   "peak_gb": 19.331459598
+  },
+  "binade": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 8.557840842838413,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 31.418183250003494,
+   "gen_s": 162.66609333399538,
+   "peak_gb": 16.572884705
+  },
+  "binade_fused": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 8.557840842838413,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 35.022946958997636,
+   "gen_s": 194.08456954100257,
+   "peak_gb": 14.870869917
+  },
+  "q8": {
+   "positions": 16352,
+   "positions_bit_identical": 0,
+   "argmax_agreement": 0.9819593933463796,
+   "perplexity": 8.547571156125366,
+   "max_abs_target_logprob_diff": 1.5392646789550781,
+   "generations": 32,
+   "generations_identical": 0,
+   "tokens_identical": 0.533447265625,
+   "mean_first_divergence": 32.2,
+   "windows_s": 32.15209241699631,
+   "gen_s": 107.56934420800098,
+   "peak_gb": 13.582893578
+  }
+ }
+}

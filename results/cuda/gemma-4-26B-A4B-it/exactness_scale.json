@@ -1,0 +1,76 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-26B-A4B-it/snapshots/4d7ae4984b7db7de8f8457170b3f1a419ee76d52",
+  "repo_id": "google/gemma-4-26B-A4B-it",
+  "revision": "4d7ae4984b7db7de8f8457170b3f1a419ee76d52"
+ },
+ "packed": "models/gemma-4-26B-A4B-it-binade",
+ "git": {
+  "commit": "9e51bc3e949ae598cafd4b3dddd3cdabb4e38077",
+  "dirty": false
+ },
+ "mlx": "0.32.2",
+ "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+ "dataset": {
+  "repo": "Salesforce/wikitext",
+  "file": "wikitext-2-raw-v1/test-00000-of-00001.parquet"
+ },
+ "args": {
+  "original": "google/gemma-4-26B-A4B-it",
+  "packed": "models/gemma-4-26B-A4B-it-binade",
+  "q8": "True",
+  "fused": "False",
+  "reordered": "False",
+  "reference": "resident",
+  "windows": "32",
+  "window_tokens": "512",
+  "prompts": "32",
+  "prompt_tokens": "48",
+  "gen_tokens": "128",
+  "out": "results/cuda/gemma-4-26B-A4B-it"
+ },
+ "variants": {
+  "bf16": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 17321.071731425054,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 18.172827996999786,
+   "gen_s": 43.33207452800025,
+   "peak_gb": 54.026418632
+  },
+  "binade": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 17321.071731425054,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 23.31533955299983,
+   "gen_s": 55.30364934900035,
+   "peak_gb": 41.065669928
+  },
+  "q8": {
+   "positions": 16352,
+   "positions_bit_identical": 0,
+   "argmax_agreement": 0.7718933463796478,
+   "perplexity": 16741.213007370905,
+   "max_abs_target_logprob_diff": 32.85749816894531,
+   "generations": 32,
+   "generations_identical": 0,
+   "tokens_identical": 0.19189453125,
+   "mean_first_divergence": 8.5,
+   "windows_s": 51.36888475299975,
+   "gen_s": 40.43861636800011,
+   "peak_gb": 30.808795872
+  }
+ }
+}

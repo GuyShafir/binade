@@ -6,7 +6,7 @@
  },
  "packed": "models/gemma-4-12B-it-binade-v2",
  "git": {
-  "commit": "629104b1e1b5cfe546dcd61b89c6b79e2738d930",
+  "commit": "24743c8ab96a035020ed74e57d6e16bef437ed86",
   "dirty": false
  },
  "prompt": "Explain in three short paragraphs why lossless compression of neural network weights can speed up inference on memory-bandwidth-bound hardware.",
@@ -282,13 +282,13 @@
    4403,
    236761
   ],
-  "prefill_s": 7.694786191000276,
-  "prefill_warm_s": 0.08916047799993976,
+  "prefill_s": 7.141654418010148,
+  "prefill_warm_s": 0.06467927899211645,
   "prefill_repeatable": true,
-  "generate_s": 11.644176529000106,
-  "tokens_per_s": 21.98523866092426,
-  "decode_tokens_per_s": 59.064968103308594,
-  "peak_gb": 20.026092,
+  "generate_s": 11.64297817699844,
+  "tokens_per_s": 21.98750148872965,
+  "decode_tokens_per_s": 58.82546187235194,
+  "peak_gb": 23.88676768,
   "text": "<|channel>thought\n\n*   Topic: Lossless compression of neural network weights.\n    *   Context: Speeding up inference on memory-bandwidth-bound hardware.\n    *   Constraint: Exactly three short paragraphs.\n\n    *   *What is memory-bandwidth-bound?* It means the bottleneck is how fast data can move from memory (RAM/VRAM) to the processor (GPU/TPU/NPU), not how fast the processor can do the math.\n    *   *What is lossless compression?* Reducing the size of the weights without losing any information (e.g., using Huffman coding, Gzip, or specialized weight-sharing).\n    *   *How does it help?* Smaller weights = fewer bytes to move. If the bottleneck is the \"pipe\" (bandwidth), moving fewer bytes through that pipe allows the processor to get the data it needs faster.\n\n    *   *Paragraph 1: The Bottleneck.* Define memory-bandwidth-bound hardware. Explain that the speed of inference is limited by the rate at which weights are loaded from memory into the processing units, rather than the actual computation speed.\n    *   *Paragraph 2: The Mechanism.* Explain how lossless compression works in this context.",
   "dropped": [
    "vision_embedder.patch_dense.bias",
@@ -301,7 +301,7 @@
    "vision_embedder.pos_norm.bias",
    "vision_embedder.pos_norm.weight"
   ],
-  "load_s": 21.757293112000298
+  "load_s": 21.799680226991768
  },
  "bf16": {
   "prompt_tokens": 40,
@@ -563,12 +563,12 @@
    4403,
    236761
   ],
-  "prefill_s": 0.034016818999589304,
-  "prefill_warm_s": 0.02746623900020495,
+  "prefill_s": 0.03467621900199447,
+  "prefill_warm_s": 0.028075070003978908,
   "prefill_repeatable": true,
-  "generate_s": 4.709569207000641,
-  "tokens_per_s": 54.35741333187402,
-  "decode_tokens_per_s": 54.98492453634925,
+  "generate_s": 4.714017325008172,
+  "tokens_per_s": 54.30612200805949,
+  "decode_tokens_per_s": 54.953761498945994,
   "peak_gb": 24.132773296,
   "text": "<|channel>thought\n\n*   Topic: Lossless compression of neural network weights.\n    *   Context: Speeding up inference on memory-bandwidth-bound hardware.\n    *   Constraint: Exactly three short paragraphs.\n\n    *   *What is memory-bandwidth-bound?* It means the bottleneck is how fast data can move from memory (RAM/VRAM) to the processor (GPU/TPU/NPU), not how fast the processor can do the math.\n    *   *What is lossless compression?* Reducing the size of the weights without losing any information (e.g., using Huffman coding, Gzip, or specialized weight-sharing).\n    *   *How does it help?* Smaller weights = fewer bytes to move. If the bottleneck is the \"pipe\" (bandwidth), moving fewer bytes through that pipe allows the processor to get the data it needs faster.\n\n    *   *Paragraph 1: The Bottleneck.* Define memory-bandwidth-bound hardware. Explain that the speed of inference is limited by the rate at which weights are loaded from memory into the processing units, rather than the actual computation speed.\n    *   *Paragraph 2: The Mechanism.* Explain how lossless compression works in this context.",
   "dropped": [
@@ -582,6 +582,6 @@
    "vision_embedder.pos_norm.bias",
    "vision_embedder.pos_norm.weight"
   ],
-  "load_s": 4.766556083999603
+  "load_s": 4.875375104005798
  }
 }

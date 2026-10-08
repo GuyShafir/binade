@@ -5,7 +5,7 @@
 
 For one weight per distinct projection shape, and M prompt rows, times y = x W^T four ways:
   bf16         MLX's matmul on the original BF16 weight
-  r4_fused     the R4 GEMM (binade/mlx/kernel.py source_r4_gemm), decoding weights as it loads
+  r4_fused     the R4 GEMM (binade/mlx/kernel.py source_r4_gemm, tile from r4.gemm_tile), decoding weights as it loads
   r4_rebuild   BF16 weight rebuilt from R4 by the decode kernel, then MLX's matmul
   r4_runtime   what R4Linear does for M rows (fused for short inputs or when memory is tight, else rebuild)
 Each is the median of --reps evaluations after a warm-up. r4_fused is checked bit for bit
@@ -88,7 +88,7 @@ def main():
             x = mx.random.normal((M, K), key=mx.random.key(M)).astype(mx.bfloat16)
             fns = {
                 "bf16": lambda: x @ w.T,
-                "r4_fused": lambda: m._gather_mm(x, mx.zeros((M,), dtype=mx.uint32), N, N, bm=16 if M <= 16 else 32, bn=32),
+                "r4_fused": lambda: m._gather_mm(x, mx.zeros((M,), dtype=mx.uint32), N, N),
                 "r4_rebuild": lambda: x @ m.dense().T,
                 "r4_runtime": lambda: m._rows(x),
             }

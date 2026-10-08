@@ -1,0 +1,48 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-12B-it/snapshots/707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+  "repo_id": "google/gemma-4-12B-it",
+  "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7"
+ },
+ "git": {
+  "commit": "d796fce5afdf557c0c12bfd5388c1fc1cf6bc08e",
+  "dirty": false
+ },
+ "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+ "args": {
+  "model": "google/gemma-4-12B-it",
+  "hf_python": "~/hfref/bin/python",
+  "device": "cuda",
+  "dtypes": "float32,bfloat16",
+  "tokens": "512",
+  "out": "results/cuda/gemma-4-12B-it"
+ },
+ "dtypes": {
+  "float32": {
+   "tokens": 511,
+   "perplexity_reference": 715.1983032226562,
+   "perplexity_mlx": 713.025146484375,
+   "argmax_agreement": 0.9941291585127201,
+   "nll_abs_diff_mean": 0.014532677829265594,
+   "nll_abs_diff_p99": 0.17072530090808868,
+   "nll_abs_diff_max": 0.8800411224365234,
+   "nll_correlation": 0.9999619582387608,
+   "transformers": "5.18.0",
+   "torch": "2.14.1+cu130",
+   "mlx": "0.32.2"
+  },
+  "bfloat16": {
+   "tokens": 511,
+   "perplexity_reference": 725.7526245117188,
+   "perplexity_mlx": 724.3347778320312,
+   "argmax_agreement": 0.9412915851272016,
+   "nll_abs_diff_mean": 0.22977101802825928,
+   "nll_abs_diff_p99": 2.025324583053589,
+   "nll_abs_diff_max": 7.880817413330078,
+   "nll_correlation": 0.9961639910942618,
+   "transformers": "5.18.0",
+   "torch": "2.14.1+cu130",
+   "mlx": "0.32.2"
+  }
+ }
+}

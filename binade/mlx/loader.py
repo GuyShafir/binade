@@ -227,3 +227,19 @@ def load_reference_streamed(path):
     """(model, tokenizer, dropped) for load_streamed_model."""
     model, config, dropped = load_streamed_model(path)
     return model, load_tokenizer(Path(path), eos_token_ids=config.get("eos_token_id", None)), dropped
+
+
+def load_quantized_reference(path, bits: int = 8, group_size: int = 64):
+    """Stock model quantized with mlx-lm's own quantize_model (affine, the model's
+    quant_predicate), the usual lossy alternative: (model, tokenizer, dropped). Loads BF16
+    lazily and evaluates one layer at a time, so peak memory stays near the quantized size."""
+    from mlx_lm.utils import quantize_model
+
+    path = Path(path)
+    dropped = []
+    model, config = load_model(path, lazy=True, strict=True, get_model_classes=model_classes(None, dropped))
+    model, config = quantize_model(model, config, group_size, bits)
+    for layer in model.layers:
+        mx.eval(layer.parameters())
+    mx.eval(model.parameters())
+    return model, load_tokenizer(path, eos_token_ids=config.get("eos_token_id", None)), dropped

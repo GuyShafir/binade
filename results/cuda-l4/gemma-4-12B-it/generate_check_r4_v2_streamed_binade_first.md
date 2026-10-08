@@ -1,0 +1,24 @@
+# Binade greedy decode check (r4 runtime): google/gemma-4-12B-it
+
+`scripts/generate_check.py` @ `4d2376c`, 64 greedy tokens, prompt of 40 tokens.
+
+**PASS**: prompt logits identical over the full vocabulary: True; a second prompt pass repeats them bit for bit (BF16, Binade): True, True; token ids identical: True.
+
+Checkpoint tensors without a model parameter, dropped by both loaders (listed in generate_check.json): 9 (BF16); 0 packed weights and 9 other tensors (Binade).
+
+| model | load s | prompt pass s (first, second) | decode tok/s (after the first token) | tok/s incl. prompt | peak GB |
+|---|---|---|---|---|---|
+| BF16 (mlx_lm), decoder layers streamed from disk | n/a | n/a | n/a | n/a | n/a |
+| Binade format 2, R4 runtime (R4 kernel for single-row steps) | 79.4 | 17.78, 0.39 | 11.19 | 2.69 | 20.0 |
+
+BF16 does not fit in memory, so the reference reads each decoder layer's weights from the checkpoint when it runs (binade.mlx.loader.load_streamed_model): its timings measure disk reads, and it serves only as the bit-exact reference.
+
+Output (both):
+
+> <|channel>thought
+> 
+> *   Topic: Lossless compression of neural network weights.
+>     *   Context: Speeding up inference on memory-bandwidth-bound hardware.
+>     *   Constraint: Exactly three short paragraphs.
+> 
+>     *   *What is memory-bandwidth-bound?* It means the bottleneck is how

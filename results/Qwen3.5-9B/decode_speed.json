@@ -1,0 +1,81 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--Qwen--Qwen3.5-9B/snapshots/c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "repo_id": "Qwen/Qwen3.5-9B",
+  "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a"
+ },
+ "git": {
+  "commit": "8f3fc485c9a9bd5bf1adc408f8c50ccd809d5929",
+  "dirty": false
+ },
+ "args": {
+  "original": "Qwen/Qwen3.5-9B",
+  "packed": "models/Qwen3.5-9B-binade",
+  "runs": "3",
+  "tokens": "256",
+  "cooldown": "60",
+  "out": "None",
+  "models": "bf16,binade_r4,q8"
+ },
+ "median_tok_s": {
+  "bf16": 26.90403422088373,
+  "binade_r4": 34.41619369034848,
+  "q8": 48.737116591214736
+ },
+ "speedup": 1.2792205588124617,
+ "identical_ids_all_runs": true,
+ "q8_ids_identical_to_reference": false,
+ "runs": {
+  "bf16": [
+   {
+    "tok_s": 26.90403422088373,
+    "median_ms": 37.065042000904214,
+    "peak_gb": 18.028195448
+   },
+   {
+    "tok_s": 26.633519250094274,
+    "median_ms": 36.51541600265773,
+    "peak_gb": 18.028195448
+   },
+   {
+    "tok_s": 26.906828696425624,
+    "median_ms": 36.892208001518156,
+    "peak_gb": 18.028195448
+   }
+  ],
+  "binade_r4": [
+   {
+    "tok_s": 35.64079944246969,
+    "median_ms": 27.761375000409316,
+    "peak_gb": 15.639072629
+   },
+   {
+    "tok_s": 31.509618890383482,
+    "median_ms": 33.18141699855914,
+    "peak_gb": 15.639072629
+   },
+   {
+    "tok_s": 34.41619369034848,
+    "median_ms": 28.272042000025976,
+    "peak_gb": 15.639072629
+   }
+  ],
+  "q8": [
+   {
+    "tok_s": 48.737116591214736,
+    "median_ms": 20.258666001609527,
+    "peak_gb": 13.582893578
+   },
+   {
+    "tok_s": 47.34703389607117,
+    "median_ms": 20.59666700370144,
+    "peak_gb": 13.582893578
+   },
+   {
+    "tok_s": 50.07314729538845,
+    "median_ms": 19.97999999730382,
+    "peak_gb": 13.582893578
+   }
+  ]
+ }
+}

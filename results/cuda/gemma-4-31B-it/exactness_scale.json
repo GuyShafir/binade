@@ -1,0 +1,76 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-31B-it/snapshots/842da3794eaa0b77d5f08bae87a17459d91ff475",
+  "repo_id": "google/gemma-4-31B-it",
+  "revision": "842da3794eaa0b77d5f08bae87a17459d91ff475"
+ },
+ "packed": "models/gemma-4-31B-it-binade",
+ "git": {
+  "commit": "4d2376c8c5410335c626e7a2121769e4c202bea5",
+  "dirty": false
+ },
+ "mlx": "0.32.2",
+ "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+ "dataset": {
+  "repo": "Salesforce/wikitext",
+  "file": "wikitext-2-raw-v1/test-00000-of-00001.parquet"
+ },
+ "args": {
+  "original": "google/gemma-4-31B-it",
+  "packed": "models/gemma-4-31B-it-binade",
+  "q8": "True",
+  "fused": "False",
+  "reordered": "False",
+  "reference": "resident",
+  "windows": "32",
+  "window_tokens": "512",
+  "prompts": "32",
+  "prompt_tokens": "48",
+  "gen_tokens": "128",
+  "out": "results/cuda/gemma-4-31B-it"
+ },
+ "variants": {
+  "bf16": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 6433.693484421193,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 28.33808542800034,
+   "gen_s": 184.06949075099965,
+   "peak_gb": 64.883978416
+  },
+  "binade": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 6433.693484421193,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 23.961122322999472,
+   "gen_s": 178.27249571300035,
+   "peak_gb": 49.486202648
+  },
+  "q8": {
+   "positions": 16352,
+   "positions_bit_identical": 0,
+   "argmax_agreement": 0.8941413894324853,
+   "perplexity": 6846.746098148139,
+   "max_abs_target_logprob_diff": 19.34438133239746,
+   "generations": 32,
+   "generations_identical": 0,
+   "tokens_identical": 0.846435546875,
+   "mean_first_divergence": 40.25,
+   "windows_s": 15.30760266499965,
+   "gen_s": 109.8356278680003,
+   "peak_gb": 38.6577616
+  }
+ }
+}

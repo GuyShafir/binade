@@ -1,0 +1,81 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--unsloth--Llama-3.1-8B-Instruct/snapshots/4699cc75b550f9c6f3173fb80f4703b62d946aa5",
+  "repo_id": "unsloth/Llama-3.1-8B-Instruct",
+  "revision": "4699cc75b550f9c6f3173fb80f4703b62d946aa5"
+ },
+ "git": {
+  "commit": "4d2376c8c5410335c626e7a2121769e4c202bea5",
+  "dirty": false
+ },
+ "args": {
+  "original": "unsloth/Llama-3.1-8B-Instruct",
+  "packed": "models/Llama-3.1-8B-Instruct-binade",
+  "runs": "3",
+  "tokens": "256",
+  "cooldown": "60",
+  "out": "results/cuda/Llama-3.1-8B-Instruct",
+  "models": "bf16,binade_r4,q8"
+ },
+ "median_tok_s": {
+  "bf16": 89.5399420082317,
+  "binade_r4": 93.58672241084268,
+  "q8": 145.0668947711498
+ },
+ "speedup": 1.0451952537811444,
+ "identical_ids_all_runs": false,
+ "q8_ids_identical_to_reference": false,
+ "runs": {
+  "bf16": [
+   {
+    "tok_s": 77.8103433152661,
+    "median_ms": 10.935460000155217,
+    "peak_gb": 16.237422632
+   },
+   {
+    "tok_s": 89.59879786551097,
+    "median_ms": 10.990019000018947,
+    "peak_gb": 16.237422632
+   },
+   {
+    "tok_s": 89.5399420082317,
+    "median_ms": 10.991139999987354,
+    "peak_gb": 16.237422632
+   }
+  ],
+  "binade_r4": [
+   {
+    "tok_s": 93.7803867071101,
+    "median_ms": 10.519320000184962,
+    "peak_gb": 14.371394016
+   },
+   {
+    "tok_s": 93.44872426758832,
+    "median_ms": 10.560629000110566,
+    "peak_gb": 14.340297664
+   },
+   {
+    "tok_s": 93.58672241084268,
+    "median_ms": 10.549438999987615,
+    "peak_gb": 14.199180576
+   }
+  ],
+  "q8": [
+   {
+    "tok_s": 145.0668947711498,
+    "median_ms": 6.694180000067718,
+    "peak_gb": 10.63375156
+   },
+   {
+    "tok_s": 145.2663597164208,
+    "median_ms": 6.699030000163475,
+    "peak_gb": 10.63375156
+   },
+   {
+    "tok_s": 144.9024015329581,
+    "median_ms": 6.708038999931887,
+    "peak_gb": 10.63375156
+   }
+  ]
+ }
+}

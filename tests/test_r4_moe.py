@@ -136,6 +136,23 @@ def _tiny_gemma4_moe(tmp_path):
     return src
 
 
+@pytest.mark.parametrize("K", [704, 2816, 520])
+def test_gather_split_outputs(K):
+    """split returns the two halves of the fused rows as separate arrays, equal to slicing
+    the unsplit result (gate and up of the expert gather, without slice nodes)."""
+    E, n, topk = 6, 40, 4
+    rng = np.random.default_rng(K)
+    m = _r4(_weights(rng, (E * 2 * n, K)))
+    x = mx.array(rng.standard_normal((1, 1, K)).astype(np.float32)).astype(mx.bfloat16)
+    ei = mx.array(np.array([[[4, 0, 5, 2]]], np.uint32))
+    xi = mx.zeros((topk,), dtype=mx.uint32)
+    whole = m._gather(x, xi, ei, 2 * n, 2 * n)
+    lo, hi = m._gather(x, xi, ei, 2 * n, 2 * n, split=n)
+    mx.eval(whole, lo, hi)
+    assert lo.shape == (topk, n) and hi.shape == (topk, n)
+    assert np.array_equal(_bits(lo), _bits(whole[:, :n])) and np.array_equal(_bits(hi), _bits(whole[:, n:]))
+
+
 @pytest.mark.parametrize("version", ["1", "2"])
 def test_moe_model_r4_matches_bf16(tmp_path, version):
     from mlx_lm.generate import generate_step
@@ -274,6 +291,37 @@ def test_order_sensitive_sorted_gather(K):
     assert np.array_equal(_bits(got), _bits(ref))
 
 
+@metal_only
+@pytest.mark.parametrize("tile", [(16, 32, 1, 2), (16, 64, 1, 4), (32, 32, 1, 2), (32, 64, 2, 2), (64, 64, 2, 2), (128, 64, 4, 2), (64, 128, 2, 4)])
+def test_order_sensitive_gemm_tiles(tile):
+    """Every R4 GEMM tile (bm, bn, wm, wn) runs the same MMA steps along K: bit-identical to
+    MLX's sorted gather_mm (K with and without a partial last R4 tile) and to its plain GEMM,
+    on order-sensitive data."""
+    from binade.mlx.r4 import use_mma
+
+    E, N, S = 8, 48, 67
+    rng = np.random.default_rng(sum(tile))
+    idx = mx.array(np.sort(rng.integers(0, E, size=S)).astype(np.uint32))
+    for K in (704, 2816):
+        w = _adversarial(E * N, K).reshape(E, N, K)
+        m = _r4(w)
+        W = mx.array(w).view(mx.bfloat16)
+        x = mx.ones((S, 1, K), dtype=mx.bfloat16)
+        ref = mx.gather_mm(x, W.swapaxes(-1, -2), rhs_indices=idx, sorted_indices=True).reshape(S, N)
+        got = m._gather_mm(x, idx, N, N, tile=tile)
+        mx.eval(ref, got)
+        assert np.array_equal(_bits(got), _bits(ref)), K
+    N, K, M = 4096, 512, 40
+    assert use_mma(M, N, K)
+    w = _adversarial(N, K)
+    m = _r4(w)
+    x = mx.ones((M, K), dtype=mx.bfloat16)
+    ref = x @ mx.array(w).view(mx.bfloat16).T
+    got = m._gather_mm(x, mx.zeros((M,), dtype=mx.uint32), N, N, tile=tile)
+    mx.eval(ref, got)
+    assert np.array_equal(_bits(got), _bits(ref))
+
+
 @pytest.mark.parametrize("K", [704, 2816, 520, 96])
 def test_order_sensitive_gathers(K):
     """The decode-step expert gather (MLX's gemv_gather on Metal, gather_mv on CUDA)."""
@@ -286,6 +334,27 @@ def test_order_sensitive_gathers(K):
     got = m._gather(mx.ones((1, K), dtype=mx.bfloat16), mx.zeros((topk,), dtype=mx.uint32), sel, N, N)
     mx.eval(ref, got)
     assert np.array_equal(_bits(got), _bits(ref.reshape(topk, N)))
+
+
+@metal_only
+def test_two_accumulators_change_the_order(monkeypatch):
+    """The TWO_ACCUMULATORS ablation (even and odd K steps in separate sums) is a different
+    summation order: the order-sensitive data sees it in the matvec and in the GEMM."""
+    from binade.mlx import kernel
+    from binade.mlx.r4 import use_mma
+
+    monkeypatch.setattr(kernel, "TWO_ACCUMULATORS", True)
+    N, K, M = 4096, 512, 40
+    assert use_mma(M, N, K)
+    w = _adversarial(N, K)
+    m = _r4(w)
+    W = mx.array(w).view(mx.bfloat16)
+    x = mx.ones((M, K), dtype=mx.bfloat16)
+    ref, got = x @ W.T, m._gather_mm(x, mx.zeros((M,), dtype=mx.uint32), N, N)
+    ref1, got1 = x[:1] @ W.T, m._matvec(x[:1])
+    mx.eval(ref, got, ref1, got1)
+    assert not np.array_equal(_bits(got), _bits(ref))
+    assert not np.array_equal(_bits(got1).reshape(-1), _bits(ref1).reshape(-1))
 
 
 @metal_only

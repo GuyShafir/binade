@@ -1,0 +1,76 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-26B-A4B-it/snapshots/4d7ae4984b7db7de8f8457170b3f1a419ee76d52",
+  "repo_id": "google/gemma-4-26B-A4B-it",
+  "revision": "4d7ae4984b7db7de8f8457170b3f1a419ee76d52"
+ },
+ "packed": "models/gemma-4-26B-A4B-it-binade",
+ "git": {
+  "commit": "9e76a343dc5f5acb3224c9a5eb0a73b48a957193",
+  "dirty": false
+ },
+ "mlx": "0.32.2",
+ "device": "Apple M4 Max",
+ "dataset": {
+  "repo": "Salesforce/wikitext",
+  "file": "wikitext-2-raw-v1/test-00000-of-00001.parquet"
+ },
+ "args": {
+  "original": "google/gemma-4-26B-A4B-it",
+  "packed": "models/gemma-4-26B-A4B-it-binade",
+  "q8": "True",
+  "fused": "False",
+  "reordered": "False",
+  "reference": "streamed",
+  "windows": "32",
+  "window_tokens": "512",
+  "prompts": "0",
+  "prompt_tokens": "48",
+  "gen_tokens": "128",
+  "out": "None"
+ },
+ "variants": {
+  "bf16": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 16782.17827745123,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 0,
+   "generations_identical": 0,
+   "tokens_identical": null,
+   "mean_first_divergence": null,
+   "windows_s": 292.4571499589947,
+   "gen_s": 9.333001798950136e-06,
+   "peak_gb": 4.498510658
+  },
+  "binade": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 16782.17827745123,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 0,
+   "generations_identical": 0,
+   "tokens_identical": null,
+   "mean_first_divergence": null,
+   "windows_s": 35.625682083002175,
+   "gen_s": 0.00015733399777673185,
+   "peak_gb": 39.081263547
+  },
+  "q8": {
+   "positions": 16352,
+   "positions_bit_identical": 0,
+   "argmax_agreement": 0.7636986301369864,
+   "perplexity": 16998.8780836726,
+   "max_abs_target_logprob_diff": 33.99074935913086,
+   "generations": 0,
+   "generations_identical": 0,
+   "tokens_identical": null,
+   "mean_first_divergence": null,
+   "windows_s": 25.5755748340016,
+   "gen_s": 1.066599361365661e-05,
+   "peak_gb": 28.700547732
+  }
+ }
+}

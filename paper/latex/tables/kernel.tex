@@ -1,0 +1,13 @@
+\begin{tabular}{llrrrrr}
+\toprule
+GPU & method & ms/token & bytes & GB/s & efficiency & speedup \\
+\midrule
+M4 Max (Metal) & BF16 & 48.2 & 1.000 & 494 & 100.0\% & 1.00$\times$ \\
+ & 8-bit (lossy) & 25.7 & 0.531 & 491 & 99.4\% & 1.87$\times$ \\
+ & format 1 in place & 47.3 & 0.712 & 359 & 72.6\% & 1.02$\times$ \\
+ & R4 & 36.2 & 0.755 & 496 & 100.3\% & 1.33$\times$ \\
+RTX PRO 6000 (CUDA) & BF16 & 15.3 & 1.000 & 1553 & 100.0\% & 1.00$\times$ \\
+ & 8-bit (lossy) & 8.7 & 0.531 & 1462 & 94.1\% & 1.77$\times$ \\
+ & R4 & 13.5 & 0.755 & 1333 & 85.8\% & 1.14$\times$ \\
+\bottomrule
+\end{tabular}

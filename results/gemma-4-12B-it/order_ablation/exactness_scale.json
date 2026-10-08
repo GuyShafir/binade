@@ -1,0 +1,76 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-12B-it/snapshots/707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+  "repo_id": "google/gemma-4-12B-it",
+  "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7"
+ },
+ "packed": "models/gemma-4-12B-it-binade-v2",
+ "git": {
+  "commit": "8f9f0e73d87558edf93253f8b5da889f4f0ae3ab",
+  "dirty": false
+ },
+ "mlx": "0.32.2",
+ "device": "Apple M4 Max",
+ "dataset": {
+  "repo": "Salesforce/wikitext",
+  "file": "wikitext-2-raw-v1/test-00000-of-00001.parquet"
+ },
+ "args": {
+  "original": "google/gemma-4-12B-it",
+  "packed": "models/gemma-4-12B-it-binade-v2",
+  "q8": "False",
+  "fused": "False",
+  "reordered": "True",
+  "reference": "resident",
+  "windows": "32",
+  "window_tokens": "512",
+  "prompts": "32",
+  "prompt_tokens": "48",
+  "gen_tokens": "128",
+  "out": "results/gemma-4-12B-it/order_ablation"
+ },
+ "variants": {
+  "bf16": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 729.4151259650439,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 44.2028841670035,
+   "gen_s": 239.27789808299713,
+   "peak_gb": 25.322573182
+  },
+  "binade": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 729.4151259650439,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 43.81221233399992,
+   "gen_s": 232.95471733299928,
+   "peak_gb": 21.065354131
+  },
+  "binade_reordered": {
+   "positions": 16352,
+   "positions_bit_identical": 0,
+   "argmax_agreement": 0.8849681996086106,
+   "perplexity": 754.3528646324626,
+   "max_abs_target_logprob_diff": 17.28566551208496,
+   "generations": 32,
+   "generations_identical": 0,
+   "tokens_identical": 0.3779296875,
+   "mean_first_divergence": 16.26923076923077,
+   "windows_s": 101.86315033300343,
+   "gen_s": 282.1002909589952,
+   "peak_gb": 19.422252113
+  }
+ }
+}

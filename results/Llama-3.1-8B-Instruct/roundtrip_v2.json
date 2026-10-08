@@ -1,0 +1,41 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--unsloth--Llama-3.1-8B-Instruct/snapshots/4699cc75b550f9c6f3173fb80f4703b62d946aa5",
+  "repo_id": "unsloth/Llama-3.1-8B-Instruct",
+  "revision": "4699cc75b550f9c6f3173fb80f4703b62d946aa5"
+ },
+ "packed": "models/Llama-3.1-8B-Instruct-binade",
+ "git": {
+  "commit": "20966381c7a234974208c5ce9720e9a970a2b429",
+  "dirty": false
+ },
+ "pack_git": "20966381c7a234974208c5ce9720e9a970a2b429",
+ "binade": {
+  "quant_method": "binade",
+  "version": "2",
+  "tile": 128
+ },
+ "tensors_checked": 291,
+ "tensors_packed": 226,
+ "missing": [],
+ "extra": [],
+ "mismatched_elements": 0,
+ "input_bytes": 16060556376,
+ "output_bytes": 10766652080,
+ "classes": {
+  "embed": {
+   "tensors": 2,
+   "numel": 1050673152,
+   "bits": 11271149920,
+   "bits_per_weight": 10.727551092882594
+  },
+  "linear": {
+   "tensors": 224,
+   "numel": 6979321856,
+   "bits": 74855683488,
+   "bits_per_weight": 10.725351980099312
+  }
+ },
+ "pack_seconds": 476.8814381250013,
+ "check_seconds": 18.447653999999602
+}

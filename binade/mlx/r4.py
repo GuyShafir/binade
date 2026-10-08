@@ -21,6 +21,7 @@ import mlx.nn as nn
 import numpy as np
 
 from ..format import TILE
+from . import cublas_plan
 from . import cuda_kernels as ck
 from .kernel import _kernel_r4_gemm, _kernel_r4_pf
 from .kernel import r4_decode as r4_decode_metal
@@ -30,6 +31,10 @@ from .slow_linear import CHUNK, BinadeEmbedding, BinadeLinear, _plan
 
 PREFETCH = 2  # tiles loaded ahead in the matvec kernel
 CUDA = ck.available()  # MLX's CUDA backend: cuda_kernels.py replaces the Metal kernels
+
+
+def _u32(a: mx.array) -> mx.array:
+    return a if a.dtype == mx.uint32 else a.astype(mx.uint32)
 
 
 def r4_decode(*args, **kwargs) -> mx.array:
@@ -51,16 +56,44 @@ def use_matvec(N: int, K: int) -> bool:
     return 64 < K < 16 * N
 
 
+CUDA_FUSED_MAX_ROWS = 128  # multi-row inputs up to this many rows take the fused R4 GEMM on CUDA when cuBLAS's plan allows (above, the rebuild's decode overlaps other layers' work and ties or wins end to end)
 REBUILD_MARGIN = 1 << 30  # bytes kept free below the GPU working set when rebuilding a weight
-FUSED_MAX_ROWS = 32  # up to this many rows the R4 GEMM beats rebuild + MLX GEMM (prefill_bench.md)
+FUSED_MAX_ROWS = 128  # up to this many rows the R4 GEMM beats rebuild + MLX GEMM (prefill_bench.md)
+
+
+def gemm_tile(rows: int) -> tuple:
+    """R4 GEMM tile (bm, bn, wm, wn) for about `rows` slots per expert: 64 x 64
+    (four SIMD groups of 32 x 32) unless a 64-row block would be at least half empty. Tiling
+    does not change any output's summation order, so this is a speed choice only (measured on
+    Gemma 4 12B's shapes, scripts/prefill_bench.py)."""
+    if rows <= 16:
+        return (16, 32, 1, 2)
+    if rows <= 32 or -(-rows // 64) * 64 - rows >= 32:
+        return (32, 64, 2, 2)
+    return (64, 64, 2, 2)
+
+
+def memory_limit() -> int:
+    """Bytes of GPU memory to plan within: Metal's recommended working set, or CUDA's total."""
+    info = mx.device_info()
+    return info.get("max_recommended_working_set_size") or info["total_memory"]
 
 
 def rebuild_fits(nbytes: int) -> bool:
     """Whether a BF16 weight of nbytes can be built without crowding the GPU working set.
     Rebuilding and calling MLX's GEMM is exact by construction and, with room, faster than
     the fused R4 GEMM; near the limit, fresh allocations page (Gemma 4 26B)."""
-    limit = mx.device_info()["max_recommended_working_set_size"]
-    return mx.get_active_memory() + nbytes + REBUILD_MARGIN <= limit
+    return mx.get_active_memory() + nbytes + REBUILD_MARGIN <= memory_limit()
+
+
+def defer_rebuilds() -> bool:
+    """Whether a prompt pass may leave its rebuilt BF16 weights in the lazy graph instead of
+    evaluating each product as it is built. Evaluating bounds memory but synchronizes once per
+    weight; deferring is safe when even every weight rebuilt at once (about 1.33 times the R4
+    weights, 16 / 12.07 bits) fits beside what is resident. On the RTX PRO 6000 (96 GB) the
+    first token of a 40-token 12B prompt comes 21 ms sooner (97 to 76 ms); on a 48 GB Mac
+    holding the 12B it does not apply."""
+    return 2.4 * mx.get_active_memory() <= memory_limit()
 
 
 def use_mma(M: int, N: int, K: int) -> bool:
@@ -146,50 +179,59 @@ class _R4:
         self.T = -(-self.K // TILE)
 
     def _matvec(self, x: mx.array) -> mx.array:
+        """x [..., K] holding one row -> [..., N]. Inputs and output keep the caller's shapes,
+        so a call adds no reshape to the graph: decoding a MoE model on a fast GPU can be
+        bound by the CPU's graph building, not the GPU."""
         a = self._a
         if CUDA:
             return ck.r4_matvec(a, x, self.N, self.K)
         bm = 8 if self.N >= 4096 else 4
         groups = -(-self.N // bm)
         (y,) = _kernel_r4_pf(PREFETCH, self.K % TILE != 0)(
-            inputs=[x.reshape(-1), a["raw"], a["codes"], a["flags"], a["esc"], a["table"], a["row_esc"]],
+            inputs=[x, a["raw"], a["codes"], a["flags"], a["esc"], a["table"], a["row_esc"]],
             template=[("N", self.N), ("K", self.K), ("T", self.T), ("BM", bm)],
             grid=(groups * bm * 32, 1, 1),
             threadgroup=(bm * 32, 1, 1),
-            output_shapes=[(self.N,)],
+            output_shapes=[(*x.shape[:-1], self.N)],
             output_dtypes=[mx.bfloat16],
         )
         return y
 
-    def _gather(self, x: mx.array, xi: mx.array, ei: mx.array, n: int, rs: int, r0: int = 0) -> mx.array:
-        """[G, n] outputs: pair g multiplies input row xi[g] of x [.., K] by storage rows
-        ei[g] * rs + r0 .. + n (one expert's rows). Bit-identical to MLX's gemv_gather."""
+    def _gather(self, x: mx.array, xi: mx.array, ei: mx.array, n: int, rs: int, r0: int = 0, *, split: int | None = None, shape: tuple | None = None):
+        """[G, n] outputs (or `shape`): pair g multiplies input row xi[g] of x [.., K] by storage
+        rows ei[g] * rs + r0 .. + n (one expert's rows). Bit-identical to MLX's gemv_gather.
+        With split, the pair [G, split], [G, n - split] (gate and up of fused expert rows)."""
         a = self._a
         if CUDA:
-            return ck.r4_gather(a, x, xi, ei, n, rs, r0, self.K)
+            return ck.r4_gather(a, x, xi, ei, n, rs, r0, self.K, split, shape)
         G = int(ei.size)
         bm = 8 if n >= 4096 else 4
-        (y,) = _kernel_r4_pf(PREFETCH, self.K % TILE != 0, True)(
-            inputs=[x.reshape(-1), a["raw"], a["codes"], a["flags"], a["esc"], a["table"], a["row_esc"], xi.astype(mx.uint32), ei.astype(mx.uint32)],
-            template=[("N", n), ("K", self.K), ("T", self.T), ("BM", bm), ("RS", rs), ("R0", r0)],
+        shapes = [(G, split), (G, n - split)] if split else [shape or (G, n)]
+        out = _kernel_r4_pf(PREFETCH, self.K % TILE != 0, True, bool(split))(
+            inputs=[x, a["raw"], a["codes"], a["flags"], a["esc"], a["table"], a["row_esc"], _u32(xi), _u32(ei)],
+            template=[("N", n), ("K", self.K), ("T", self.T), ("BM", bm), ("RS", rs), ("R0", r0)] + ([("SPLIT", split)] if split else []),
             grid=(-(-n // bm) * bm * 32, G, 1),
             threadgroup=(bm * 32, 1, 1),
-            output_shapes=[(G * n,)],
-            output_dtypes=[mx.bfloat16],
+            output_shapes=shapes,
+            output_dtypes=[mx.bfloat16] * len(shapes),
         )
-        return y.reshape(G, n)
+        return (out[0], out[1]) if split else out[0]
 
-    def _gather_mm(self, x: mx.array, idx: mx.array, n: int, rs: int, r0: int = 0, *, bm: int = 32, bn: int = 32) -> mx.array:
+    def _gather_mm(self, x: mx.array, idx: mx.array, n: int, rs: int, r0: int = 0, *, tile: tuple | None = None) -> mx.array:
         """[S, n] = rows of x [S, K] times storage rows idx[s] * rs + r0 .. + n, for slots sorted
         by expert. Bit-identical to MLX's gather_mm(x, W.swapaxes(-1, -2), idx, sorted_indices=True),
-        and with all idx 0 to MLX's x @ W.T wherever use_mma holds."""
+        and with all idx 0 to MLX's x @ W.T wherever use_mma holds. tile = (bm, bn, wm, wn),
+        by default gemm_tile for the average slots per expert."""
         a = self._a
         S = int(idx.size)
+        if self.K % 8:
+            raise ValueError(f"the R4 GEMM needs K % 8 == 0, got {self.K}")
+        bm, bn, wm, wn = tile or gemm_tile(-(-S // max(1, self.N // rs)))
         p = mx.array([S, n, self.K, self.T, rs, r0], dtype=mx.uint32)
-        (y,) = _kernel_r4_gemm(bm, bn)(
+        (y,) = _kernel_r4_gemm(bm, bn, wm, wn)(
             inputs=[x.reshape(S, self.K), idx.astype(mx.uint32), a["raw"], a["codes"], a["flags"], a["esc"], a["table"], a["row_esc"], p],
-            grid=(-(-n // bn) * 128, -(-S // bm), 1),
-            threadgroup=(128, 1, 1),
+            grid=(-(-n // bn) * wm * wn * 32, -(-S // bm), 1),
+            threadgroup=(wm * wn * 32, 1, 1),
             output_shapes=[(S, n)],
             output_dtypes=[mx.bfloat16],
         )
@@ -204,23 +246,43 @@ class _R4:
         return r4_decode(a["raw"], a["codes"], a["flags"], a["esc"], a["table"], a["row_esc"], self.N // rs * n, self.K, n, rs, r0)
 
 
+    def _cuda_fused(self, x: mx.array, M: int):
+        """x @ W.T for M > 1 rows on CUDA with the fused R4 tensor-core GEMM, or None when the
+        runtime must rebuild BF16 for cuBLAS instead: MLX sends these products to cuBLASLt, and
+        the fused kernel reproduces cuBLAS's algorithm without split-K and with split-K over BF16
+        or float32 partials or in place, summing K in order or in two slices (cublas_plan). The
+        plan is cuBLASLt's own choice for this shape."""
+        if M > CUDA_FUSED_MAX_ROWS or self.K % 32 or not cublas_plan.mirrored():
+            return None
+        p = cublas_plan.plan(M, self.N, self.K)
+        split = cublas_plan.supported(p)
+        sl = cublas_plan.slices(M, self.N, self.K)
+        if split is None or sl is None or not ck.gemm_supported(M, self.N, self.K, sl):
+            return None
+        bounds = cublas_plan.partitions(self.K, p[0])
+        return ck.r4_gemm(self._a, x.reshape(M, self.K), self.N, self.K, bounds, split, slices=sl)
+
     def _rows(self, x: mx.array) -> mx.array:
         """x [..., K] @ W.T for any number of rows, bit-identical to MLX on the BF16 weight.
         One row: the matvec kernel. Where MLX runs its plain GEMM (use_mma), the R4 GEMM for
         short inputs (up to FUSED_MAX_ROWS) or when a BF16 rebuild would crowd GPU memory.
-        Otherwise the BF16 weight is rebuilt and MLX's own matmul runs (evaluated here, so
-        rebuilt weights do not pile up in a lazy graph); its fixed decode cost pays off on
-        long prompts."""
+        Otherwise the BF16 weight is rebuilt and MLX's own matmul runs (evaluated here unless
+        defer_rebuilds, so rebuilt weights do not pile up in a lazy graph); its fixed decode
+        cost pays off on long prompts."""
         lead = x.shape[:-1]
-        M = int(np.prod(lead))
+        M = x.size // self.K
         if M == 1 and (CUDA or use_matvec(self.N, self.K)):  # MLX's CUDA backend runs gemv for any K
-            return self._matvec(x).reshape(*lead, self.N)
+            return self._matvec(x)
+        if CUDA and M > 1:
+            y = self._cuda_fused(x, M)
+            if y is not None:
+                return y.reshape(*lead, self.N)
         if not CUDA and use_mma(M, self.N, self.K) and (M <= FUSED_MAX_ROWS or not rebuild_fits(2 * self.N * self.K)):
-            bm, bn = (16, 32) if M <= 16 else (32, 32)
-            y = self._gather_mm(x.reshape(M, self.K), mx.zeros((M,), dtype=mx.uint32), self.N, self.N, bm=bm, bn=bn)
+            y = self._gather_mm(x.reshape(M, self.K), mx.zeros((M,), dtype=mx.uint32), self.N, self.N)
             return y.reshape(*lead, self.N)
         y = x @ self.dense().T
-        mx.eval(y)
+        if not defer_rebuilds():
+            mx.eval(y)
         return y
 
 

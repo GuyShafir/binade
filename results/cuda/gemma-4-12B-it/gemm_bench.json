@@ -1,0 +1,382 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-12B-it/snapshots/707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+  "repo_id": "google/gemma-4-12B-it",
+  "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7"
+ },
+ "packed": "models/gemma-4-12B-it-binade-v2",
+ "git": {
+  "commit": "6f1607bee6713bf3043042709fff6ad1e6daa4ce",
+  "dirty": false
+ },
+ "mlx": "0.32.2",
+ "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+ "args": {
+  "original": "google/gemma-4-12B-it",
+  "packed": "models/gemma-4-12B-it-binade-v2",
+  "rows": "40,128,256,512,1024,2048",
+  "out": "None"
+ },
+ "products": [
+  {
+   "tensor": "layers.0.self_attn.q_proj.weight",
+   "N": 4096,
+   "K": 3840,
+   "M": 40,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 3.238299999566152e-05,
+   "rebuild_s": 6.616100000655933e-05,
+   "exact": true,
+   "fused_s": 4.2176099998414426e-05
+  },
+  {
+   "tensor": "layers.0.self_attn.q_proj.weight",
+   "N": 4096,
+   "K": 3840,
+   "M": 128,
+   "plan": [
+    5,
+    4
+   ],
+   "slices": 1,
+   "bf16_s": 2.9754999991382648e-05,
+   "rebuild_s": 7.390600000007907e-05,
+   "exact": true,
+   "fused_s": 3.677700000253026e-05
+  },
+  {
+   "tensor": "layers.0.self_attn.q_proj.weight",
+   "N": 4096,
+   "K": 3840,
+   "M": 256,
+   "plan": [
+    2,
+    4
+   ],
+   "slices": 1,
+   "bf16_s": 3.754500000923145e-05,
+   "rebuild_s": 7.493900000099529e-05,
+   "exact": true,
+   "fused_s": 5.121410000583637e-05
+  },
+  {
+   "tensor": "layers.0.self_attn.q_proj.weight",
+   "N": 4096,
+   "K": 3840,
+   "M": 512,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 5.933700000468889e-05,
+   "rebuild_s": 8.575200000677796e-05,
+   "exact": true,
+   "fused_s": 7.503400000814508e-05
+  },
+  {
+   "tensor": "layers.0.self_attn.q_proj.weight",
+   "N": 4096,
+   "K": 3840,
+   "M": 1024,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 0.00010106299999961266,
+   "rebuild_s": 0.0001288490999968417,
+   "exact": true,
+   "fused_s": 0.0001302590000022974
+  },
+  {
+   "tensor": "layers.0.self_attn.q_proj.weight",
+   "N": 4096,
+   "K": 3840,
+   "M": 2048,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 0.00016521700000566853,
+   "rebuild_s": 0.00019480700000258367,
+   "exact": true,
+   "fused_s": 0.0002396760000010545
+  },
+  {
+   "tensor": "layers.0.self_attn.o_proj.weight",
+   "N": 3840,
+   "K": 4096,
+   "M": 40,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 3.082399999811969e-05,
+   "rebuild_s": 6.61379999996825e-05,
+   "exact": true,
+   "fused_s": 4.126999999698455e-05
+  },
+  {
+   "tensor": "layers.0.self_attn.o_proj.weight",
+   "N": 3840,
+   "K": 4096,
+   "M": 128,
+   "plan": [
+    6,
+    4
+   ],
+   "slices": 1,
+   "bf16_s": 3.049399999781599e-05,
+   "rebuild_s": 7.478999999648295e-05,
+   "exact": true,
+   "fused_s": 3.7835000000541186e-05
+  },
+  {
+   "tensor": "layers.0.self_attn.o_proj.weight",
+   "N": 3840,
+   "K": 4096,
+   "M": 256,
+   "plan": [
+    3,
+    4
+   ],
+   "slices": 1,
+   "bf16_s": 3.9691000006314424e-05,
+   "rebuild_s": 7.653400000435795e-05,
+   "exact": true,
+   "fused_s": 5.20530000017061e-05
+  },
+  {
+   "tensor": "layers.0.self_attn.o_proj.weight",
+   "N": 3840,
+   "K": 4096,
+   "M": 512,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 5.991399999629721e-05,
+   "rebuild_s": 8.671200000662794e-05,
+   "exact": true,
+   "fused_s": 7.586000000401328e-05
+  },
+  {
+   "tensor": "layers.0.self_attn.o_proj.weight",
+   "N": 3840,
+   "K": 4096,
+   "M": 1024,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 9.983800000554766e-05,
+   "rebuild_s": 0.00012765400000489536,
+   "exact": true,
+   "fused_s": 0.00012774399999671004
+  },
+  {
+   "tensor": "layers.0.self_attn.o_proj.weight",
+   "N": 3840,
+   "K": 4096,
+   "M": 2048,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 0.00016292799999746422,
+   "rebuild_s": 0.00019312099999524435,
+   "exact": true,
+   "fused_s": 0.0002340929999945729
+  },
+  {
+   "tensor": "layers.0.mlp.gate_proj.weight",
+   "N": 15360,
+   "K": 3840,
+   "M": 40,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 5.205900000646579e-05,
+   "rebuild_s": 0.00024818699999968886,
+   "exact": true,
+   "fused_s": 8.25080000026901e-05
+  },
+  {
+   "tensor": "layers.0.mlp.gate_proj.weight",
+   "N": 15360,
+   "K": 3840,
+   "M": 128,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 8.664000000635497e-05,
+   "rebuild_s": 0.00025968499999180495,
+   "exact": true,
+   "fused_s": 7.444000000305096e-05
+  },
+  {
+   "tensor": "layers.0.mlp.gate_proj.weight",
+   "N": 15360,
+   "K": 3840,
+   "M": 256,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 9.904600000254504e-05,
+   "rebuild_s": 0.00026510300000381903,
+   "exact": true,
+   "fused_s": 0.00012167200000021695
+  },
+  {
+   "tensor": "layers.0.mlp.gate_proj.weight",
+   "N": 15360,
+   "K": 3840,
+   "M": 512,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 0.00015728810000155137,
+   "rebuild_s": 0.0003234519999978147,
+   "exact": true,
+   "fused_s": 0.00022676699999237825
+  },
+  {
+   "tensor": "layers.0.mlp.gate_proj.weight",
+   "N": 15360,
+   "K": 3840,
+   "M": 1024,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 0.0003029850000075385,
+   "rebuild_s": 0.0004579410000019379,
+   "exact": true,
+   "fused_s": 0.00045159599999351486
+  },
+  {
+   "tensor": "layers.0.mlp.gate_proj.weight",
+   "N": 15360,
+   "K": 3840,
+   "M": 2048,
+   "plan": [
+    1,
+    0
+   ],
+   "slices": 1,
+   "bf16_s": 0.0005889840000008917,
+   "rebuild_s": 0.0007417999999915992,
+   "exact": true,
+   "fused_s": 0.0009199918999911461
+  },
+  {
+   "tensor": "layers.0.mlp.down_proj.weight",
+   "N": 3840,
+   "K": 15360,
+   "M": 40,
+   "plan": [
+    2,
+    4
+   ],
+   "slices": 1,
+   "bf16_s": 7.709200000363125e-05,
+   "rebuild_s": 0.0002331140000023879,
+   "exact": true,
+   "fused_s": 0.00010806400000547
+  },
+  {
+   "tensor": "layers.0.mlp.down_proj.weight",
+   "N": 3840,
+   "K": 15360,
+   "M": 128,
+   "plan": [
+    6,
+    2
+   ],
+   "slices": 1,
+   "bf16_s": 7.16250000095897e-05,
+   "rebuild_s": 0.00024061100000380976,
+   "exact": true,
+   "fused_s": 9.573899999395507e-05
+  },
+  {
+   "tensor": "layers.0.mlp.down_proj.weight",
+   "N": 3840,
+   "K": 15360,
+   "M": 256,
+   "plan": [
+    3,
+    4
+   ],
+   "slices": 1,
+   "bf16_s": 9.716900000285022e-05,
+   "rebuild_s": 0.0002447500000016589,
+   "exact": true,
+   "fused_s": 0.00014063099999930273
+  },
+  {
+   "tensor": "layers.0.mlp.down_proj.weight",
+   "N": 3840,
+   "K": 15360,
+   "M": 512,
+   "plan": [
+    3,
+    4
+   ],
+   "slices": 1,
+   "bf16_s": 0.00017021799999383802,
+   "rebuild_s": 0.00029435800000783275,
+   "exact": true,
+   "fused_s": 0.00025299199999153645
+  },
+  {
+   "tensor": "layers.0.mlp.down_proj.weight",
+   "N": 3840,
+   "K": 15360,
+   "M": 1024,
+   "plan": [
+    3,
+    1
+   ],
+   "slices": 1,
+   "bf16_s": 0.00031150999999454145,
+   "rebuild_s": 0.000440553999999338,
+   "exact": true,
+   "fused_s": 0.0005579460000035396
+  },
+  {
+   "tensor": "layers.0.mlp.down_proj.weight",
+   "N": 3840,
+   "K": 15360,
+   "M": 2048,
+   "plan": [
+    4,
+    1
+   ],
+   "slices": 1,
+   "bf16_s": 0.0005950510000047871,
+   "rebuild_s": 0.0007207610000023124,
+   "exact": true,
+   "fused_s": 0.0011102690000029725
+  }
+ ]
+}

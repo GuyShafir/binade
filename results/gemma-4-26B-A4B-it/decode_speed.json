@@ -5,7 +5,7 @@
   "revision": "4d7ae4984b7db7de8f8457170b3f1a419ee76d52"
  },
  "git": {
-  "commit": "864d60ddfe5f4b350dfa948eac38204dfce1c451",
+  "commit": "8f3fc485c9a9bd5bf1adc408f8c50ccd809d5929",
   "dirty": false
  },
  "args": {
@@ -15,29 +15,48 @@
   "tokens": "256",
   "cooldown": "60",
   "out": "None",
-  "models": "binade_r4"
+  "models": "binade_r4,q8"
  },
  "median_tok_s": {
-  "binade_r4": 65.42131842173228
+  "binade_r4": 58.81690883939729,
+  "q8": 77.04604070741141
  },
  "speedup": null,
  "identical_ids_all_runs": true,
+ "q8_ids_identical_to_reference": false,
  "runs": {
   "binade_r4": [
    {
-    "tok_s": 65.42131842173228,
-    "median_ms": 15.268499999365304,
+    "tok_s": 58.81690883939729,
+    "median_ms": 16.602750001766253,
     "peak_gb": 39.081263547
    },
    {
-    "tok_s": 65.13465696321308,
-    "median_ms": 15.293041997210821,
+    "tok_s": 60.18610073398893,
+    "median_ms": 16.586375000770204,
     "peak_gb": 39.081263547
    },
    {
-    "tok_s": 65.47490290855974,
-    "median_ms": 15.25829199817963,
+    "tok_s": 58.17305468592514,
+    "median_ms": 17.119332995207515,
     "peak_gb": 39.081263547
+   }
+  ],
+  "q8": [
+   {
+    "tok_s": 78.0176062790249,
+    "median_ms": 12.791666995326523,
+    "peak_gb": 28.700547732
+   },
+   {
+    "tok_s": 76.19463001152354,
+    "median_ms": 13.34849999693688,
+    "peak_gb": 28.700547732
+   },
+   {
+    "tok_s": 77.04604070741141,
+    "median_ms": 13.141374998667743,
+    "peak_gb": 28.700547732
    }
   ]
  }

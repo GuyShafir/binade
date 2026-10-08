@@ -39,6 +39,18 @@ class BinadeSwitchGLU(nn.Module):
         raise RuntimeError("packed experts run on the R4 runtime (binade.mlx.r4.load)")
 
 
+_ROWS = {}
+
+
+def _rows_of(G: int, k: int) -> mx.array:
+    """uint32 [G]: input row g // k of each (token, expert) slot, cached (an evaluated constant
+    adds no graph node)."""
+    if (G, k) not in _ROWS:
+        _ROWS[G, k] = mx.arange(G, dtype=mx.uint32) // k
+        mx.eval(_ROWS[G, k])
+    return _ROWS[G, k]
+
+
 class R4SwitchGLU(nn.Module):
     def __init__(self, gate_up, down, activation):
         """gate_up, down: R4 modules (binade.mlx.r4._R4) over [E * 2n, D] and [E * D, n] rows."""
@@ -63,14 +75,12 @@ class R4SwitchGLU(nn.Module):
 
         do_sort = indices.size >= 64
         if not do_sort:
-            k = indices.shape[-1]
-            G = indices.size
-            ei = indices.reshape(-1).astype(mx.uint32)
-            xi = mx.arange(G, dtype=mx.uint32) // k
-            h = self._gu._gather(x.reshape(-1, self.D), xi, ei, 2 * self.n, 2 * self.n)  # [G, 2n]
-            h = self._activation(h[:, self.n :], h[:, : self.n])
-            y = self._down._gather(h, mx.arange(G, dtype=mx.uint32), ei, self.D, self.D)
-            return y.reshape(*indices.shape, self.D)
+            # The decode step: graph nodes cost CPU time per token, which bounds MoE decoding on
+            # a fast GPU, so the kernels read indices and inputs as they are, gate and up come
+            # back as two arrays, and the row maps are cached constants.
+            G, k = indices.size, indices.shape[-1]
+            gate, up = self._gu._gather(x, _rows_of(G, k), indices, 2 * self.n, 2 * self.n, split=self.n)
+            return self._down._gather(self._activation(up, gate), _rows_of(G, 1), indices, self.D, self.D, shape=(*indices.shape, self.D))
         x = mx.expand_dims(x, (-2, -3))
         x, idx, inv_order = _gather_sort(x, indices)
         from .cuda_kernels import available as cuda
@@ -80,6 +90,15 @@ class R4SwitchGLU(nn.Module):
             h = self._gu._gather_mm(x, idx, 2 * self.n, 2 * self.n)  # [S, 2n]: gate, then up
             h = self._activation(h[:, self.n :], h[:, : self.n])
             y = self._down._gather_mm(h, idx, self.D, self.D).reshape(S, 1, self.D)
+            return _scatter_unsort(y, inv_order, indices.shape).squeeze(-2)
+        if cuda() and self._gu.K % 64 == 0 and self._down.K % 64 == 0:  # the fused R4 gather GEMM mirrors MLX's CUTLASS grouped GEMM
+            from .cuda_kernels import r4_gather_mm
+
+            S = idx.size
+            x_up = r4_gather_mm(self._gu._a, x, idx, self.n, 2 * self.n, self.n, self._gu.K)
+            x_gate = r4_gather_mm(self._gu._a, x, idx, self.n, 2 * self.n, 0, self._gu.K)
+            h = self._activation(x_up, x_gate)
+            y = r4_gather_mm(self._down._a, h, idx, self.D, self.D, 0, self._down.K).reshape(S, 1, self.D)
             return _scatter_unsort(y, inv_order, indices.shape).squeeze(-2)
         gate, up, down = self._dense()
         x_up = mx.gather_mm(x, up.swapaxes(-1, -2), rhs_indices=idx, sorted_indices=True)

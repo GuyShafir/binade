@@ -1,0 +1,41 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--Qwen--Qwen3.5-9B/snapshots/c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "repo_id": "Qwen/Qwen3.5-9B",
+  "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a"
+ },
+ "packed": "models/Qwen3.5-9B-binade",
+ "git": {
+  "commit": "4d2376c8c5410335c626e7a2121769e4c202bea5",
+  "dirty": false
+ },
+ "pack_git": "4d2376c8c5410335c626e7a2121769e4c202bea5",
+ "binade": {
+  "quant_method": "binade",
+  "version": "2",
+  "tile": 128
+ },
+ "tensors_checked": 775,
+ "tensors_packed": 209,
+ "missing": [],
+ "extra": [],
+ "mismatched_elements": 0,
+ "input_bytes": 19306310880,
+ "output_bytes": 13265457736,
+ "classes": {
+  "embed": {
+   "tensors": 2,
+   "numel": 2034237440,
+   "bits": 21819252384,
+   "bits_per_weight": 10.726010619487958
+  },
+  "linear": {
+   "tensors": 207,
+   "numel": 7121928192,
+   "bits": 76350365664,
+   "bits_per_weight": 10.720462718195291
+  }
+ },
+ "pack_seconds": 705.2604540720001,
+ "check_seconds": 30.703602934000173
+}

@@ -1,0 +1,36 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-26B-A4B-it/snapshots/4d7ae4984b7db7de8f8457170b3f1a419ee76d52",
+  "repo_id": "google/gemma-4-26B-A4B-it",
+  "revision": "4d7ae4984b7db7de8f8457170b3f1a419ee76d52"
+ },
+ "git": {
+  "commit": "ef2972f2aa68f61b6bb592ad2a4dd0f7c5d8b551",
+  "dirty": false
+ },
+ "device": "CPU",
+ "args": {
+  "model": "google/gemma-4-26B-A4B-it",
+  "hf_python": "~/hfref/bin/python",
+  "device": "cpu",
+  "mlx_device": "cpu",
+  "dtypes": "float32",
+  "tokens": "512",
+  "out": "results/cpu/gemma-4-26B-A4B-it"
+ },
+ "dtypes": {
+  "float32": {
+   "tokens": 511,
+   "perplexity_reference": 6631.6328125,
+   "perplexity_mlx": 6630.75390625,
+   "argmax_agreement": 0.9980430528375733,
+   "nll_abs_diff_mean": 0.0001691994839347899,
+   "nll_abs_diff_p99": 0.0011229515075683594,
+   "nll_abs_diff_max": 0.004512786865234375,
+   "nll_correlation": 0.9999999992244845,
+   "transformers": "5.18.0",
+   "torch": "2.14.1+cu130",
+   "mlx": "0.32.2"
+  }
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-12B-it/snapshots/707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+  "repo_id": "google/gemma-4-12B-it",
+  "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7"
+ },
+ "packed": "models/gemma-4-12B-it-binade-v2",
+ "git": {
+  "commit": "7bc81832ea6a32ad022a6b46e700d154e3ac578d",
+  "dirty": false
+ },
+ "mlx": "0.32.2",
+ "device": "NVIDIA L4",
+ "device_memory_gb": 24.152899584,
+ "args": {
+  "original": "google/gemma-4-12B-it",
+  "packed": "models/gemma-4-12B-it-binade-v2",
+  "variants": "bf16,binade_r4,q8",
+  "tokens": "40",
+  "timeout": "1500",
+  "out": "results/cuda-l4/gemma-4-12B-it"
+ },
+ "variants": [
+  {
+   "variant": "bf16",
+   "ok": false,
+   "error": "RuntimeError: cudaMallocAsync(&data, size, stream) failed: out of memory"
+  },
+  {
+   "variant": "binade_r4",
+   "load_s": 105.62552309600002,
+   "resident_gb": 17.97234932,
+   "tok_s": 11.273292736991399,
+   "peak_gb": 20.017572272,
+   "ok": true
+  },
+  {
+   "variant": "q8",
+   "load_s": 61.72489201399998,
+   "resident_gb": 12.65480564,
+   "tok_s": 18.032232919983763,
+   "peak_gb": 14.66807156,
+   "ok": true
+  }
+ ]
+}

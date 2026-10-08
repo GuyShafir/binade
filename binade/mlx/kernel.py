@@ -47,6 +47,12 @@ import numpy as np
 
 from ..format import ESCAPE, TILE, unpack_codes
 
+# Testing only: accumulate even and odd K steps in two separate sums, added at the end. A valid
+# summation order and a common optimization (two independent dependency chains), but not
+# MLX's, so outputs are no longer bit-identical. scripts/exactness_scale.py --reordered
+# measures what exactness protects against. Read when a kernel is first built.
+TWO_ACCUMULATORS = False
+
 DEFAULT = {"tm": 4, "prologue": False, "fast3": False, "regtab": False, "tgmeta": False, "unroll": 1, "xf32": False, "swar": False, "specesc": False, "ebase": False, "tgesc": False, "batch": 1, "ablate": ""}
 WIN = 512  # escape bytes staged per SIMD group by tgesc
 OPTIONS = tuple(DEFAULT)
@@ -449,14 +455,16 @@ def source_r4(tm: int, shuffle: bool = False) -> str:
     return "\n".join("    " + l for l in lines)
 
 
-def source_r4_pf(dist: int, partial: bool = False, gather: bool = False) -> str:
+def source_r4_pf(dist: int, partial: bool = False, gather: bool = False, acc2: bool = False, split: bool = False) -> str:
     """tm = 1 R4 matvec that loads tile t + dist's codes, raw bytes and flag while working
     on tile t (every address but the escape's is known in advance).
 
     partial: K % 128 != 0. The last tile holds K % 128 weights; like MLX's gemv tail
     (load_safe), lanes past K still add 0 * 0 to their sums, which can turn a -0 into +0.
     gather: G matvecs in one launch, one per grid row g: output row r of pair g uses
-    storage row ei[g] * RS + R0 + r and input vector xi[g] (MLX's gemv_gather)."""
+    storage row ei[g] * RS + R0 + r and input vector xi[g] (MLX's gemv_gather).
+    acc2: even and odd tiles in two sums (TWO_ACCUMULATORS; not MLX's order).
+    split (gather only): rows below SPLIT go to y [G, SPLIT], the rest to y2 [G, N - SPLIT]."""
     D = dist
 
     def raw_at(tt: str) -> str:
@@ -485,6 +493,7 @@ def source_r4_pf(dist: int, partial: bool = False, gather: bool = False) -> str:
         lines += ["size_t row = size_t(row0);", "size_t xb = 0;", "size_t yo = size_t(row0);"]
     lines += [
         "float result = 0.0f;",
+        "float result2 = 0.0f;",
         "uint epos = row_esc[row];",
         f"uint gq[{D}]; uint rq[{D}]; uint fq[{D}];",
         f"for (int d = 0; d < {D}; d++) {{ int t = d < T ? d : T - 1; gq[d] = codes[(row * T + t) * 32 + lane]; rq[d] = {raw_at('t')}; fq[d] = flags[row * T + t]; }}",
@@ -513,11 +522,17 @@ def source_r4_pf(dist: int, partial: bool = False, gather: bool = False) -> str:
         "    uint rj = (r >> (8u * uint(j))) & 0xFFu;",
         "    bfloat16_t wv = as_type<bfloat16_t>(ushort(((rj & 0x80u) << 8) | (e[j] << 7) | (rj & 0x7Fu)));",
         *(["    wv = k0 + j < K ? wv : bfloat16_t(0.0f);"] if partial else []),
-        "    result += wv * v[j];",
+        "    if (t & 1) { result2 += wv * v[j]; } else { result += wv * v[j]; }" if acc2 else "    result += wv * v[j];",
         "  }",
         "}",
+        *(["result += result2;"] if acc2 else []),
         "for (ushort sn = 16; sn >= 1; sn >>= 1) { result += simd_shuffle_down(result, sn); }",
-        "if (lane == 0) { y[yo] = static_cast<bfloat16_t>(result); }",
+        (
+            "if (lane == 0) { if (row0 < SPLIT) { y[size_t(g) * SPLIT + size_t(row0)] = static_cast<bfloat16_t>(result); } "
+            "else { y2[size_t(g) * (N - SPLIT) + size_t(row0 - SPLIT)] = static_cast<bfloat16_t>(result); } }"
+            if split
+            else "if (lane == 0) { y[yo] = static_cast<bfloat16_t>(result); }"
+        ),
     ]
     return "\n".join("    " + l for l in lines)
 
@@ -525,15 +540,16 @@ def source_r4_pf(dist: int, partial: bool = False, gather: bool = False) -> str:
 _R4PF = {}
 
 
-def _kernel_r4_pf(dist: int, partial: bool = False, gather: bool = False):
-    key = (dist, partial, gather)
+def _kernel_r4_pf(dist: int, partial: bool = False, gather: bool = False, split: bool = False):
+    acc2 = TWO_ACCUMULATORS
+    key = (dist, partial, gather, acc2, split)
     if key not in _R4PF:
         inputs = ["x", "raw", "codes", "flags", "esc", "tbl", "row_esc"] + (["xi", "ei"] if gather else [])
         _R4PF[key] = mx.fast.metal_kernel(
-            name=f"binade_gemv_r4_pf{dist}{'_p' if partial else ''}{'_g' if gather else ''}",
+            name=f"binade_gemv_r4_pf{dist}{'_p' if partial else ''}{'_g' if gather else ''}{'_acc2' if acc2 else ''}{'_s' if split else ''}",
             input_names=inputs,
-            output_names=["y"],
-            source=source_r4_pf(dist, partial, gather),
+            output_names=["y", "y2"] if split else ["y"],
+            source=source_r4_pf(dist, partial, gather, acc2, split),
         )
     return _R4PF[key]
 
@@ -672,37 +688,84 @@ def r4_decode(raw, codes, flags, esc, table, row_esc, N: int, K: int, nb: int | 
     return u.view(mx.bfloat16).reshape(N, K)
 
 
-def source_r4_gemm(bm: int, bn: int) -> str:
+GEMM_BK = 32  # K chunk staged per step, inside one 128-weight R4 tile
+_UNROLL = '_Pragma("clang loop unroll(full)") '
+
+
+def source_r4_gemm(bm: int, bn: int, wm: int, wn: int, acc2: bool = False) -> str:
     """R4 GEMM over slots sorted by expert, bit-identical to MLX's GEMM (steel) and its sorted
     gather_mm (gather_mm_rhs). MLX accumulates each output element in float
     simdgroup_multiply_accumulate steps of 8 along K, in order, whatever its block sizes, when
     K is a multiple of its K block and no split-K applies; this kernel runs the same steps
     (fragment layout from steel's BaseMMAFrag::get_coord) on weights decoded from R4.
-    A threadgroup of 4 SIMD groups (2 x 2) owns bm slots x bn outputs and walks
-    K one R4 tile (128 weights) at a time, in order: it stages the slots' inputs in
-    threadgroup memory, each SIMD group decodes bn / 4 weight rows (a running escape pointer
-    per row, as in the matvec kernel), then every SIMD group runs the tile's MMA steps of 8.
+
+    A threadgroup of wm x wn SIMD groups owns bm slots x bn outputs, each SIMD group a
+    (bm / wm) x (bn / wn) block of 8 x 8 accumulators (register blocking, as in steel). K is
+    walked in chunks of 32 inside each R4 tile, in order: the chunk's inputs are staged in
+    threadgroup memory while tpr = threads / bn threads per weight row decode 32 / tpr weights
+    each; a row's running escape pointer stays in its threads' registers (escape counts from
+    the code nibbles, exchanged within the row's threads), and one lookup turns a byte of codes
+    into two exponents in place. Then every SIMD group runs the chunk's MMA steps of 8.
+    Staging chunks rather than whole tiles keeps threadgroup memory near MLX's (several
+    threadgroups per core), which hides the decode behind other threadgroups' MMAs.
     Slots are sorted by expert; each run of equal experts in the block redoes the K walk
-    with that expert's rows, like MLX's gather_mm_rhs. Runtime p = [S, N, K, T, RS, R0]."""
-    assert bm % 16 == 0 and bn % 16 == 0
-    tm, tn, rows_per_sg = bm // 16, bn // 16, bn // 4
-    ld = 128 + 8  # padded row of a staged tile, in bf16 elements
+    with that expert's rows, like MLX's gather_mm_rhs. Runtime p = [S, N, K, T, RS, R0];
+    K % 8 == 0 (rows of K weights, MMA steps of 8). acc2: even and odd MMA steps in two
+    accumulator sets (TWO_ACCUMULATORS; not MLX's order)."""
+    U = _UNROLL
+    bk = GEMM_BK
+    nthr = wm * wn * 32
+    tm, tn = bm // (8 * wm), bn // (8 * wn)
+    tpr = nthr // bn
+    assert tm >= 1 and tn >= 1 and tpr in (2, 4) and bn * tpr == nthr, (bm, bn, wm, wn)
+    W = bk // tpr  # weights per decoding thread per chunk: 16 or 8
+    a_per = bm * bk // nthr  # inputs staged per thread per chunk
+    assert a_per in (4, 8, 16), (bm, bn, wm, wn)
+    a_w = min(a_per, 8)
+    a_vec = "packed_uint2" if a_w == 4 else "packed_uint4"
+    a_zero = "packed_uint2(0u)" if a_w == 4 else "packed_uint4(0u)"
+    ncw = W // 8  # 32-bit code words per thread per chunk
+    ld = bk + 8  # padded row of a staged chunk, in bf16 elements
+    cvec, rvec = ("packed_uint2", "packed_uint4") if W == 16 else ("uint", "packed_uint2")
+    cw_init = "{cv.x, cv.y}" if W == 16 else "{cv}"
+    rw_init = "{rv.x, rv.y, rv.z, rv.w}" if W == 16 else "{rv.x, rv.y}"
+    mma = f"{U}for (int i = 0; i < {tm}; i++) {{ {U}for (int j = 0; j < {tn}; j++) {{ simdgroup_multiply_accumulate(C[i][j], A[i], B[j], C[i][j]); }} }}"
+    acc2_decl = acc2_sum = ""
+    if acc2:
+        mma = f"{U}for (int i = 0; i < {tm}; i++) {{ {U}for (int j = 0; j < {tn}; j++) {{ if (s & 1) {{ simdgroup_multiply_accumulate(C2[i][j], A[i], B[j], C2[i][j]); }} else {{ simdgroup_multiply_accumulate(C[i][j], A[i], B[j], C[i][j]); }} }} }}"
+        acc2_decl = f"simdgroup_float8x8 C2[{tm}][{tn}]; {U}for (int i = 0; i < {tm}; i++) {{ {U}for (int j = 0; j < {tn}; j++) {{ C2[i][j] = simdgroup_float8x8(0); }} }}"
+        acc2_sum = f"{U}for (int i = 0; i < {tm}; i++) {{ {U}for (int j = 0; j < {tn}; j++) {{ C[i][j].thread_elements()[0] += C2[i][j].thread_elements()[0]; C[i][j].thread_elements()[1] += C2[i][j].thread_elements()[1]; }} }}"
+    if tpr == 2:
+        scan = """uint other = simd_shuffle_xor(cnt, 1);
+              q = epos + (g ? other : 0u);
+              epos += cnt + other;"""
+    else:
+        scan = """uint s = cnt;
+              uint s1 = simd_shuffle_up(s, 1); if ((lane & 3u) >= 1u) { s += s1; }
+              uint s2 = simd_shuffle_up(s, 2); if ((lane & 3u) >= 2u) { s += s2; }
+              q = epos + s - cnt;
+              epos += simd_shuffle(s, lane | 3u);"""
     return f"""
     const int S = int(p[0]), N = int(p[1]), K = int(p[2]), T = int(p[3]);
     const size_t RS = size_t(p[4]), R0 = size_t(p[5]);
     threadgroup ushort As[{bm * ld}];
     threadgroup ushort Bs[{bn * ld}];
+    threadgroup uint lut2[256];  // byte of two codes -> both exponents at their BF16 bit positions
     uint lane = thread_index_in_simdgroup;
     uint sg = simdgroup_index_in_threadgroup;
     uint tid = thread_position_in_threadgroup.x;
     int rb = int(threadgroup_position_in_grid.y) * {bm};
     int cb = int(threadgroup_position_in_grid.x) * {bn};
     if (rb >= S) {{ return; }}
+    for (int i = int(tid); i < 256; i += {nthr}) {{ lut2[i] = (uint(tbl[i & 15]) << 7) | (uint(tbl[i >> 4]) << 23); }}
     short qid = lane / 4;
     short fm = (qid & 4) + ((lane / 2) % 4);
     short fn = (qid & 2) * 2 + (lane % 2) * 2;
-    int sm = int(sg / 2) * {bm // 2};
-    int sn = int(sg % 2) * {bn // 2};
+    int sm = int(sg / {wn}) * {bm // wm};
+    int sn = int(sg % {wn}) * {bn // wn};
+    int nl = int(tid) / {tpr}, g = int(tid) % {tpr};  // decoding role: weight row nl, weights g * {W} .. of each chunk
+    int n = cb + nl;
+    bool nok = n < N;
     int rows = min({bm}, S - rb);
     int seg = 0;
     while (seg < rows) {{
@@ -710,71 +773,92 @@ def source_r4_gemm(bm: int, bn: int) -> str:
       int end = seg + 1;
       while (end < rows && idx[rb + end] == e) {{ end++; }}
       simdgroup_float8x8 C[{tm}][{tn}];
-      for (int i = 0; i < {tm}; i++) {{ for (int j = 0; j < {tn}; j++) {{ C[i][j] = simdgroup_float8x8(0); }} }}
-      uint epos[{rows_per_sg}];
-      for (int r = 0; r < {rows_per_sg}; r++) {{
-        int n = cb + int(sg) * {rows_per_sg} + r;
-        epos[r] = n < N ? row_esc[size_t(e) * RS + R0 + size_t(n)] : 0u;
-      }}
+      {U}for (int i = 0; i < {tm}; i++) {{ {U}for (int j = 0; j < {tn}; j++) {{ C[i][j] = simdgroup_float8x8(0); }} }}
+      {acc2_decl}
+      size_t row = size_t(e) * RS + R0 + size_t(nok ? n : 0);
+      uint epos = nok ? row_esc[row] : 0u;
       for (int t = 0; t < T; t++) {{
         int k0 = t * 128;
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-        // stage the block's inputs: {bm} rows x 128, four bf16 per load
-        for (int i = int(tid); i < {bm * 32}; i += 128) {{
-          int r = i / 32, c = (i % 32) * 4;
-          uint2 v = uint2(0u, 0u);
-          if (rb + r < S && k0 + c < K) {{ v = *(reinterpret_cast<const device uint2*>(x + size_t(rb + r) * K + k0 + c)); }}
-          *(reinterpret_cast<threadgroup uint2*>(As + r * {ld} + c)) = v;
-        }}
-        // decode this SIMD group's weight rows of tile t
-        for (int r = 0; r < {rows_per_sg}; r++) {{
-          int nl = int(sg) * {rows_per_sg} + r;
-          int n = cb + nl;
-          uint u[4] = {{0u, 0u, 0u, 0u}};
-          if (n < N) {{
-            size_t row = size_t(e) * RS + R0 + size_t(n);
-            bool in = k0 + int(lane) * 4 < K;
-            uint g = codes[(row * T + t) * 32 + lane];
-            uint rw = in ? *(reinterpret_cast<const device uint*>(raw + row * K + k0 + lane * 4)) : 0u;
-            uint c4[4]; uint ex[4];
-            for (int j = 0; j < 4; j++) {{ c4[j] = (g >> (4u * uint(j))) & 15u; ex[j] = tbl[c4[j]]; }}
-            if (flags[row * T + t]) {{
-              uint cnt = 0;
-              for (int j = 0; j < 4; j++) {{ cnt += c4[j] == 15u ? 1u : 0u; }}
-              uint q = epos[r] + simd_prefix_exclusive_sum(cnt);
-              for (int j = 0; j < 4; j++) {{ if (c4[j] == 15u) {{ ex[j] = esc[q]; q++; }} }}
-              epos[r] += simd_sum(cnt);
+        int kend = min(128, K - k0);
+        bool fl = nok && flags[row * T + t] != 0;
+        for (int kc = 0; kc < kend; kc += {bk}) {{
+          threadgroup_barrier(mem_flags::mem_threadgroup);
+          {U}for (int l = 0; l < {a_per // a_w}; l++) {{
+            int i = int(tid) + l * {nthr};
+            int r = i / {bk // a_w}, c = (i % {bk // a_w}) * {a_w};
+            int k = k0 + kc + c;
+            {a_vec} v = {a_zero};
+            if (rb + r < S) {{
+              const device bfloat16_t* src = x + size_t(rb + r) * K + k;
+              if (k + {a_w} <= K) {{ v = *(reinterpret_cast<const device {a_vec}*>(src)); }}
+              else {{ {U}for (int q2 = 0; q2 < {a_w // 2}; q2++) {{ if (k + 2 * q2 < K) {{ v[q2] = *(reinterpret_cast<const device uint*>(src + 2 * q2)); }} }} }}
             }}
-            for (int j = 0; j < 4; j++) {{
-              uint rj = (rw >> (8u * uint(j))) & 0xFFu;
-              u[j] = in ? (((rj & 0x80u) << 8) | (ex[j] << 7) | (rj & 0x7Fu)) : 0u;
+            *(reinterpret_cast<threadgroup {a_vec}*>(As + r * {ld} + c)) = v;
+          }}
+          {{
+            int kw = k0 + kc + g * {W};
+            bool in = nok && kw < K;
+            {cvec} cv = in ? *(reinterpret_cast<const device {cvec}*>(codes + (row * T + t) * 32 + (kc + g * {W}) / 4)) : {cvec}(0u);
+            {rvec} rv = {rvec}(0u);
+            if (in) {{
+              const device uchar* src = raw + row * K + kw;
+              if (kw + {W} <= K) {{ rv = *(reinterpret_cast<const device {rvec}*>(src)); }}
+              else {{ {U}for (int q2 = 0; q2 < {W // 4}; q2++) {{ if (kw + 4 * q2 < K) {{ rv[q2] = *(reinterpret_cast<const device uint*>(src + 4 * q2)); }} }} }}
+            }}
+            uint cw[{ncw}] = {cw_init};
+            uint rw[{W // 4}] = {rw_init};
+            uint f[{ncw}];  // bit 4i set where code i is the escape code 15
+            uint cnt = 0;
+            {U}for (int w = 0; w < {ncw}; w++) {{ f[w] = cw[w] & (cw[w] >> 1) & (cw[w] >> 2) & (cw[w] >> 3) & 0x11111111u; cnt += popcount(f[w]); }}
+            uint q = 0;
+            if (simd_any(fl)) {{
+              {scan}
+            }}
+            {U}for (int hh = 0; hh < {ncw}; hh++) {{
+              uint pk[4];  // weights 8 hh .. 8 hh + 7 as BF16 pairs
+              {U}for (int jj = 0; jj < 4; jj++) {{
+                int j = hh * 4 + jj;
+                uint e2 = lut2[(cw[j / 4] >> (8u * uint(j % 4))) & 0xFFu];
+                uint r = (rw[j / 2] >> (16u * uint(j % 2))) & 0xFFFFu;
+                pk[jj] = e2 | ((r & 0x80u) << 8) | (r & 0x7Fu) | ((r & 0x8000u) << 16) | ((r & 0x7F00u) << 8);
+              }}
+              if (f[hh]) {{
+                {U}for (int jj = 0; jj < 8; jj++) {{
+                  if ((f[hh] >> (4u * uint(jj))) & 1u) {{
+                    uint sh = 7u + 16u * uint(jj % 2);
+                    pk[jj / 2] = (pk[jj / 2] & ~(0xFFu << sh)) | (uint(esc[q]) << sh);
+                    q++;
+                  }}
+                }}
+              }}
+              *(reinterpret_cast<threadgroup uint4*>(Bs + nl * {ld} + g * {W} + hh * 8)) = in ? uint4(pk[0], pk[1], pk[2], pk[3]) : uint4(0u);
             }}
           }}
-          *(reinterpret_cast<threadgroup uint2*>(Bs + nl * {ld} + lane * 4)) = uint2(u[0] | (u[1] << 16), u[2] | (u[3] << 16));
-        }}
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-        int steps = min(128, K - k0) / 8;
-        for (int s = 0; s < steps; s++) {{
-          int kk = s * 8;
-          simdgroup_float8x8 A[{tm}];
-          simdgroup_float8x8 B[{tn}];
-          for (int i = 0; i < {tm}; i++) {{
-            int ar = sm + i * 8 + fm;
-            A[i].thread_elements()[0] = static_cast<float>(as_type<bfloat16_t>(As[ar * {ld} + kk + fn]));
-            A[i].thread_elements()[1] = static_cast<float>(as_type<bfloat16_t>(As[ar * {ld} + kk + fn + 1]));
+          threadgroup_barrier(mem_flags::mem_threadgroup);
+          int steps = min({bk}, kend - kc) / 8;
+          for (int s = 0; s < steps; s++) {{
+            int kk = s * 8;
+            simdgroup_float8x8 A[{tm}];
+            simdgroup_float8x8 B[{tn}];
+            {U}for (int i = 0; i < {tm}; i++) {{
+              uint a2 = *(reinterpret_cast<threadgroup const uint*>(As + (sm + i * 8 + fm) * {ld} + kk + fn));
+              A[i].thread_elements()[0] = as_type<float>(a2 << 16);
+              A[i].thread_elements()[1] = as_type<float>(a2 & 0xFFFF0000u);
+            }}
+            {U}for (int j = 0; j < {tn}; j++) {{
+              int bc = sn + j * 8 + fn;
+              B[j].thread_elements()[0] = as_type<float>(uint(Bs[bc * {ld} + kk + fm]) << 16);
+              B[j].thread_elements()[1] = as_type<float>(uint(Bs[(bc + 1) * {ld} + kk + fm]) << 16);
+            }}
+            {mma}
           }}
-          for (int j = 0; j < {tn}; j++) {{
-            int bc = sn + j * 8 + fn;
-            B[j].thread_elements()[0] = static_cast<float>(as_type<bfloat16_t>(Bs[bc * {ld} + kk + fm]));
-            B[j].thread_elements()[1] = static_cast<float>(as_type<bfloat16_t>(Bs[(bc + 1) * {ld} + kk + fm]));
-          }}
-          for (int i = 0; i < {tm}; i++) {{ for (int j = 0; j < {tn}; j++) {{ simdgroup_multiply_accumulate(C[i][j], A[i], B[j], C[i][j]); }} }}
         }}
       }}
-      for (int i = 0; i < {tm}; i++) {{
+      {acc2_sum}
+      {U}for (int i = 0; i < {tm}; i++) {{
         int orow = sm + i * 8 + fm;
         if (orow >= seg && orow < end) {{
-          for (int j = 0; j < {tn}; j++) {{
+          {U}for (int j = 0; j < {tn}; j++) {{
             int n0 = cb + sn + j * 8 + fn;
             if (n0 < N) {{ y[size_t(rb + orow) * N + n0] = static_cast<bfloat16_t>(C[i][j].thread_elements()[0]); }}
             if (n0 + 1 < N) {{ y[size_t(rb + orow) * N + n0 + 1] = static_cast<bfloat16_t>(C[i][j].thread_elements()[1]); }}
@@ -789,13 +873,14 @@ def source_r4_gemm(bm: int, bn: int) -> str:
 _R4GEMM = {}
 
 
-def _kernel_r4_gemm(bm: int, bn: int):
-    if (bm, bn) not in _R4GEMM:
-        _R4GEMM[bm, bn] = mx.fast.metal_kernel(
-            name=f"binade_r4_gemm_{bm}x{bn}",
+def _kernel_r4_gemm(bm: int, bn: int, wm: int, wn: int):
+    acc2 = TWO_ACCUMULATORS
+    key = (bm, bn, wm, wn, acc2)
+    if key not in _R4GEMM:
+        _R4GEMM[key] = mx.fast.metal_kernel(
+            name=f"binade_r4_gemm_{bm}x{bn}_{wm}x{wn}{'_acc2' if acc2 else ''}",
             input_names=["x", "idx", "raw", "codes", "flags", "esc", "tbl", "row_esc", "p"],
             output_names=["y"],
-            source=source_r4_gemm(bm, bn),
+            source=source_r4_gemm(bm, bn, wm, wn, acc2),
         )
-    return _R4GEMM[bm, bn]
-
+    return _R4GEMM[key]

@@ -1,0 +1,76 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--Qwen--Qwen3.5-9B/snapshots/c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "repo_id": "Qwen/Qwen3.5-9B",
+  "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a"
+ },
+ "packed": "models/Qwen3.5-9B-binade",
+ "git": {
+  "commit": "4d2376c8c5410335c626e7a2121769e4c202bea5",
+  "dirty": false
+ },
+ "mlx": "0.32.2",
+ "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+ "dataset": {
+  "repo": "Salesforce/wikitext",
+  "file": "wikitext-2-raw-v1/test-00000-of-00001.parquet"
+ },
+ "args": {
+  "original": "Qwen/Qwen3.5-9B",
+  "packed": "models/Qwen3.5-9B-binade",
+  "q8": "True",
+  "fused": "False",
+  "reordered": "False",
+  "reference": "resident",
+  "windows": "32",
+  "window_tokens": "512",
+  "prompts": "32",
+  "prompt_tokens": "48",
+  "gen_tokens": "128",
+  "out": "results/cuda/Qwen3.5-9B"
+ },
+ "variants": {
+  "bf16": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 8.557338885971749,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 42.62341571700017,
+   "gen_s": 54.527565804999995,
+   "peak_gb": 19.335598256
+  },
+  "binade": {
+   "positions": 16352,
+   "positions_bit_identical": 16352,
+   "argmax_agreement": 1.0,
+   "perplexity": 8.557338885971749,
+   "max_abs_target_logprob_diff": 0.0,
+   "generations": 32,
+   "generations_identical": 32,
+   "tokens_identical": 1.0,
+   "mean_first_divergence": null,
+   "windows_s": 33.53886658100009,
+   "gen_s": 54.31640579999976,
+   "peak_gb": 16.817762352
+  },
+  "q8": {
+   "positions": 16352,
+   "positions_bit_identical": 0,
+   "argmax_agreement": 0.9809197651663405,
+   "perplexity": 8.546860447191783,
+   "max_abs_target_logprob_diff": 1.1679229736328125,
+   "generations": 32,
+   "generations_identical": 0,
+   "tokens_identical": 0.52197265625,
+   "mean_first_divergence": 31.25,
+   "windows_s": 37.46883588300034,
+   "gen_s": 38.93195093799977,
+   "peak_gb": 13.582893584
+  }
+ }
+}

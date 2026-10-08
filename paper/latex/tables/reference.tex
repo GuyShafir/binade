@@ -1,0 +1,12 @@
+\begin{tabular}{lllrrrr}
+\toprule
+model & dtype & device & perplexity (ref. / MLX) & argmax agr. & mean $|\Delta|$ & max $|\Delta|$ \\
+\midrule
+Gemma 4 E4B (native) & float32 & CUDA & 43.22 / 43.22 & 99.80\% & 0.0020 & 0.043 \\
+ & bfloat16 & CUDA & 43.40 / 43.21 & 98.83\% & 0.0725 & 1.380 \\
+Gemma 4 12B (aliased) & float32 & CUDA & 715.20 / 713.03 & 99.41\% & 0.0145 & 0.880 \\
+ & bfloat16 & CUDA & 725.75 / 724.33 & 94.13\% & 0.2298 & 7.881 \\
+Gemma 4 26B-A4B (native) & float32 & CPU & 6631.63 / 6630.75 & 99.80\% & 0.0002 & 0.005 \\
+ & bfloat16 & CUDA & 6085.05 / 7504.68 & 74.56\% & 1.1374 & 17.808 \\
+\bottomrule
+\end{tabular}

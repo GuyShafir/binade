@@ -1,0 +1,8 @@
+\begin{tabular}{llllrl}
+\toprule
+GPU & model & BF16 & Binade: peak, decode & identical logits (fused forced) & 8-bit: peak, decode \\
+\midrule
+L4 (24.2\,GB) & Gemma 4 12B & out of memory & 20.0\,GB, 11.1 tok/s & 16,352 / 16,352 (16,352) & 14.7\,GB, 17.9 tok/s \\
+A100 40\,GB (42.9\,GB) & Gemma 4 26B-A4B & out of memory & 40.0\,GB, 46.5 tok/s & 16,352 / 16,352 (16,352) & 28.3\,GB, 55.2 tok/s \\
+\bottomrule
+\end{tabular}

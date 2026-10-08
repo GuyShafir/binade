@@ -5,3 +5,6 @@ __pycache__/
 logs/
 models/
 *.egg-info/
+paper/latex/*.pdf
+assets/
+.DS_Store
