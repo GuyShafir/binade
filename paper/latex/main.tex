@@ -10,6 +10,13 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{microtype}
 \usepackage[skip=6pt]{caption}
+% Let tall figures sit at the top of a page near their text rather than drift to the end.
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}
+\setcounter{totalnumber}{5}
 
 % Results not yet final are marked so they cannot slip into a submission unnoticed.
 \newcommand{\pending}[1]{\textcolor{red}{[#1]}}
@@ -65,7 +72,7 @@ Code, results and the scripts behind every number are public.\footnote{\url{http
 \section{Exponent statistics}
 \label{sec:stats}
 
-\begin{figure}[t]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=\linewidth]{figures/stats.pdf}
 \caption{The statistical basis of the format. (a) Share of linear-layer weights per binade, each model aligned at its most common binade, against iid Gaussian weights (scale averaged over one binade); shaded: binades outside the 15 most frequent of Gemma 4 12B's linear layers taken together, the region R4 stores as escapes (with ranks taken per tensor, 0.026\% of that model's weights). (b) Per-tensor frequency ranks of the exponents of a $48 \times 192$ corner of Gemma 4 12B's layer-20 gate projection, as stored, with each row's weights shuffled along K, and drawn from the whole tensor. (c) Bits per weight a per-tile palette code saves by keeping positions (its cost after shuffling minus its cost as stored, best of the tile codes), against the gap to per-tensor entropy coding that locality would have had to close; Gaussian models tiled the same way. (d) Bits per weight of the linear layers in each layout, all four models (Gemma 4 12B filled); every layout includes the 8-bit raw byte, and the dotted line is the per-tensor entropy.}
@@ -181,7 +188,7 @@ Exactness is defined against MLX's BF16 run of each model, so that run must itse
 
 \paragraph{Prompt processing.} Prompts are compute-bound, so a fused decode must keep pace with MLX's GEMM rather than with memory. Figure~\ref{fig:prefill} shows the matrix products of a Gemma 4 12B prompt pass. The runtime is 1.30\x{} BF16 for 16 prompt rows, 0.77 to 0.90\x{} for 32 to 128, and 0.89 to 0.95\x{} for 512 to 2048 rows, where it rebuilds weights; BF16's own 16-row GEMM varied by up to 20\% between runs on this machine, so the 16-row figure is approximate. On long prompts the fused GEMM runs at 0.75\x{} of MLX's BF16 GEMM (4.6 against 3.5\,s of matrix products at 2048 rows), which is what a model without memory headroom pays; our first version, which decoded whole 128-weight R4 tiles into $32 \times 32$ threadgroup tiles, reached 0.37 to 0.42\x{}. Ablations place the remaining gap: the MMA steps alone run as fast as MLX's whole GEMM, and the decoding and input staging before each chunk are not fully hidden. Keeping the next chunk's loads in registers (software pipelining) was slower, because the extra registers and buffers reduce occupancy. Gemma 4 26B-A4B, which has no memory headroom and runs the fused GEMM at every prompt length, reaches its first token 0.32\,s after a 40-token prompt and 2.0\,s after a 2048-token one, with prompt logits identical to the streamed BF16 reference.
 
-\begin{figure}[t]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=0.48\linewidth]{figures/prefill.pdf}
 \caption{Matrix products of a Gemma 4 12B prompt pass, speed relative to BF16.}
