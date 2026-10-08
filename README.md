@@ -13,7 +13,7 @@ Apple M4 Max, 48 GB, MLX 0.32.2. Every number comes from a script in `scripts/`;
 | | BF16 | Binade | |
 |---|---|---|---|
 | Gemma 4 12B checkpoint | 23.92 GB | 16.10 GB | 10.746 bits per packed weight, bit-exact round trip ([roundtrip_v2](results/gemma-4-12B-it/roundtrip_v2.md)) |
-| Gemma 4 12B greedy decode | 19.35 tok/s | 24.87 tok/s | **1.29x**, identical tokens ([decode_speed](results/gemma-4-12B-it/decode_speed.md)) |
+| Gemma 4 12B greedy decode | 19.15 tok/s | 24.66 tok/s | **1.29x**, identical tokens ([decode_speed](results/gemma-4-12B-it/decode_speed.md)) |
 | Gemma 4 12B exactness | | | prompt logits over the full vocabulary and 256 greedy tokens identical ([generate_check](results/gemma-4-12B-it/generate_check_r4_v2_binade_first.md)) |
 | Gemma 4 26B-A4B checkpoint | 51.61 GB | 35.05 GB | BF16 does not load on a 48 GB Mac ([roundtrip_v2](results/gemma-4-26B-A4B-it/roundtrip_v2.md)) |
 | Gemma 4 26B-A4B decode | n/a | 65.4 tok/s | 40-token prompt in 0.32 s, logits and 64 tokens identical to BF16 ([decode_speed](results/gemma-4-26B-A4B-it/decode_speed.md), [generate_check](results/gemma-4-26B-A4B-it/generate_check_r4_v2_streamed_binade_first.md)) |
