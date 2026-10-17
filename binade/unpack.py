@@ -102,10 +102,11 @@ class PackedModel:
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("packed", type=Path)
+    ap.add_argument("packed", help="packed model directory, or a Binade repo id on the Hugging Face Hub")
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args()
-    pm = PackedModel(args.packed)
+    packed = st.fetch(args.packed)
+    pm = PackedModel(packed)
     args.out.mkdir(parents=True, exist_ok=True)
     by_file = {}
     for n in pm.names():
@@ -122,10 +123,10 @@ def main():
             else:
                 w.add(n, st.read(info), info.dtype)
         w.close()
-    config = json.loads((args.packed / "config.json").read_text())
+    config = json.loads((packed / "config.json").read_text())
     config.pop("quantization_config", None)
     (args.out / "config.json").write_text(json.dumps(config, indent=2) + "\n")
-    for f in args.packed.iterdir():
+    for f in packed.iterdir():
         if f.is_file() and not f.name.endswith(".safetensors") and f.name not in ("config.json", "binade_pack.json", "model.safetensors.index.json"):
             shutil.copy(f, args.out / f.name)
 

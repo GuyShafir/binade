@@ -121,6 +121,19 @@ def resolve(model: str, revision: str | None = None) -> Path:
     return Path(snaps[0].snapshot_path)
 
 
+def fetch(model: str, revision: str | None = None) -> Path:
+    """Like resolve, but an HF repo id that is not cached is downloaded (huggingface_hub), so a
+    published Binade model loads by name: load("Binade/gemma-4-12B-it")."""
+    try:
+        return resolve(model, revision)
+    except FileNotFoundError:
+        if Path(model).expanduser().exists() or model.count("/") != 1:
+            raise
+    from huggingface_hub import snapshot_download
+
+    return Path(snapshot_download(model, revision=revision))
+
+
 _REPO = Path(__file__).resolve().parents[1]
 
 

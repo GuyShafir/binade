@@ -16,7 +16,7 @@ Apple M4 Max, 48 GB, MLX 0.32.2. Every number comes from a script in `scripts/`;
 | Gemma 4 12B greedy decode | 19.15 tok/s | 24.66 tok/s | **1.29x**, identical tokens ([decode_speed](results/gemma-4-12B-it/decode_speed.md)) |
 | Gemma 4 12B exactness | | | prompt logits over the full vocabulary and 256 greedy tokens identical ([generate_check](results/gemma-4-12B-it/generate_check_r4_v2_binade_first.md)) |
 | Gemma 4 26B-A4B checkpoint | 51.61 GB | 35.05 GB | BF16 does not load on a 48 GB Mac ([roundtrip_v2](results/gemma-4-26B-A4B-it/roundtrip_v2.md)) |
-| Gemma 4 26B-A4B decode | n/a | 65.4 tok/s | 40-token prompt in 0.32 s, logits and 64 tokens identical to BF16 ([decode_speed](results/gemma-4-26B-A4B-it/decode_speed.md), [generate_check](results/gemma-4-26B-A4B-it/generate_check_r4_v2_streamed_binade_first.md)) |
+| Gemma 4 26B-A4B decode | n/a | 58.8 tok/s | 40-token prompt in 0.32 s, logits and 64 tokens identical to BF16 ([decode_speed](results/gemma-4-26B-A4B-it/decode_speed.md), [generate_check](results/gemma-4-26B-A4B-it/generate_check_r4_v2_streamed_binade_first.md)) |
 
 The 26B exactness check compares against a BF16 reference that reads one layer at a time from disk, since BF16 does not fit in memory.
 
@@ -46,17 +46,23 @@ Multi-row products in MLX's CUDA backend go to cuBLAS, which is closed. Its BF16
 
 ## Install
 
-Python 3.11 or newer on Apple Silicon (or Linux with CUDA 12). Exactness depends on the MLX version, so the dependencies are pinned (MLX 0.32.2, mlx-lm 0.31.3).
+Python 3.11 or newer on Apple Silicon (or Linux with CUDA 12). Exactness depends on MLX's own kernels, so MLX and mlx-lm are pinned (0.32.2 and 0.31.3).
+
+```
+pip install binade               # Apple Silicon
+pip install "binade[cuda]"       # Linux + CUDA 12
+```
+
+To run the tests or reproduce the results, install from a clone with the extras (`requirements.lock` has the exact versions the results used):
 
 ```
 git clone https://github.com/GuyShafir/binade && cd binade
-pip install -e ".[dev,eval]"                          # Apple Silicon
-pip install -e ".[dev,eval]" "mlx[cuda]==0.32.2"      # Linux + CUDA 12
+pip install -e ".[dev,eval,figures]"                  # add cuda on Linux: ".[dev,eval,figures,cuda]"
 ```
 
 ## Use
 
-Pack a model from the Hugging Face cache or a local directory:
+Load a published Binade model straight from the Hugging Face Hub (the [Binade](https://huggingface.co/Binade) organization), or pack one yourself from the Hugging Face cache or a local directory:
 
 ```
 hf download google/gemma-4-12B-it
@@ -69,13 +75,13 @@ Run it with mlx-lm:
 from mlx_lm import generate
 from binade.mlx.r4 import load
 
-model, tokenizer, _ = load("models/gemma-4-12B-it-binade")
+model, tokenizer, _ = load("Binade/gemma-4-12B-it")      # or a local packed directory
 messages = [{"role": "user", "content": "Why is the sky blue?"}]
 prompt = tokenizer.apply_chat_template(messages, add_generation_prompt=True)
 print(generate(model, tokenizer, prompt, max_tokens=200))
 ```
 
-`binade unpack <packed-dir> --out DIR` rebuilds the original BF16 checkpoint.
+`binade unpack <packed-dir or Hub repo id> --out DIR` rebuilds the original BF16 checkpoint, bit for bit.
 
 ## Verify and reproduce
 

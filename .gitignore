@@ -8,3 +8,5 @@ models/
 paper/latex/*.pdf
 assets/
 .DS_Store
+dist/
+build/

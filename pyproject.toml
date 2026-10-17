@@ -1,29 +1,52 @@
 [build-system]
-requires = ["setuptools>=69"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "binade"
-version = "0.0.1"
-description = "Bit-exact compression of BF16 LLM weights for Apple Silicon (MLX), with an experimental CUDA port"
+version = "0.1.0"
+description = "Lossless compression of BF16 LLM weights whose outputs stay bit-identical to the original, for MLX on Apple Silicon and NVIDIA GPUs"
 readme = "README.md"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Guy Shafir" }]
 requires-python = ">=3.11"
+keywords = ["llm", "compression", "lossless", "bf16", "mlx", "apple-silicon", "cuda", "inference"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+# Exactness depends on MLX's own kernels and dispatch, so MLX and mlx-lm are pinned; the other
+# dependencies are not. requirements.lock pins everything the published results ran with.
 dependencies = [
-    "numpy==2.5.3",
-    "safetensors==0.8.0",
-    "huggingface-hub==1.33.0",
+    "numpy>=2.0",
+    "safetensors>=0.4",
+    "huggingface-hub>=1.0",
     "mlx==0.32.2",
     "mlx-lm==0.31.3",
-    "matplotlib==3.11.2",
 ]
+
+[project.urls]
+Homepage = "https://github.com/GuyShafir/binade"
+Repository = "https://github.com/GuyShafir/binade"
+Paper = "https://github.com/GuyShafir/binade/blob/main/paper/binade.pdf"
+Models = "https://huggingface.co/Binade"
 
 [project.scripts]
 binade = "binade.cli:main"
 
 [project.optional-dependencies]
-dev = ["pytest==9.1.1"]
-eval = ["pyarrow==25.0.1"]
+cuda = ["mlx[cuda]==0.32.2"]
+eval = ["pyarrow>=15"]
+figures = ["matplotlib>=3.8"]
+dev = ["pytest>=8"]
 
 [tool.setuptools.packages.find]
 include = ["binade*"]

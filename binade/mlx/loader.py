@@ -157,7 +157,8 @@ def load_packed_model(path, lazy: bool = True):
 
 
 def load(path, lazy: bool = True, cache_limit_gb: float | None = 8):
-    """(model, tokenizer, dropped checkpoint tensors) for a Binade-packed model directory.
+    """(model, tokenizer, dropped checkpoint tensors) for a Binade-packed model: a directory, a
+    cached HF repo id, or an HF repo id to download (st.fetch).
 
     Sets MLX's buffer cache limit (global) unless cache_limit_gb is None: the slow runtime
     frees and reallocates large decode buffers every call, and with the default unbounded
@@ -165,6 +166,7 @@ def load(path, lazy: bool = True, cache_limit_gb: float | None = 8):
     unbounded, 3.0 s at 8 GB, 4.6 s at 1 GB, measured on the 48 GB M4 Max)."""
     if cache_limit_gb is not None:
         mx.set_cache_limit(int(cache_limit_gb * (1 << 30)))
+    path = st.fetch(str(path))
     model, config = load_packed_model(path, lazy)
     tok = load_tokenizer(Path(path), eos_token_ids=config.get("eos_token_id", None))
     return model, tok, config["binade_dropped"]
