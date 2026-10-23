@@ -27,7 +27,7 @@ from mlx.utils import tree_flatten, tree_unflatten
 from mlx_lm.utils import _get_classes, load_model, load_tokenizer
 
 from .. import st
-from ..pack import PARTS
+from ..pack import PARTS, pack_meta
 from .moe import BinadeSwitchGLU
 from .slow_linear import BinadeEmbedding, BinadeLinear
 
@@ -146,9 +146,8 @@ def model_classes(specs: dict | None = None, dropped: list | None = None):
 def load_packed_model(path, lazy: bool = True):
     """(model, config) for a Binade-packed model directory."""
     path = Path(path)
-    config = json.loads((path / "config.json").read_text())
-    q = config.get("quantization_config", {})
-    if q.get("quant_method") != "binade" or str(q.get("version")) not in PARTS:
+    q = pack_meta(path) or {}
+    if str(q.get("version")) not in PARTS:
         raise ValueError(f"{path}: not a Binade model ({q})")
     dropped = []
     model, config = load_model(path, lazy=lazy, strict=True, get_model_classes=model_classes(packed_specs(path), dropped))

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "binade"
-version = "0.1.0"
+version = "0.1.1"
 description = "Lossless compression of BF16 LLM weights whose outputs stay bit-identical to the original, for MLX on Apple Silicon and NVIDIA GPUs"
 readme = "README.md"
 license = "Apache-2.0"

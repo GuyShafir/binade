@@ -35,6 +35,21 @@ def quant(version: str = VERSION) -> dict:
 
 
 QUANT = quant()
+
+
+def pack_meta(path) -> dict | None:
+    """The Binade marker of a packed directory ({"quant_method": "binade", "version", "tile"}): the
+    "binade" entry of binade_pack.json, else the quantization_config that packs before binade 0.1.1
+    wrote into config.json; None for a directory that is not a Binade pack."""
+    path = Path(path)
+    report = path / "binade_pack.json"
+    if report.exists():
+        meta = json.loads(report.read_text()).get("binade")
+        if meta and meta.get("quant_method") == "binade":
+            return meta
+    config = path / "config.json"
+    q = json.loads(config.read_text()).get("quantization_config", {}) if config.exists() else {}
+    return q if q.get("quant_method") == "binade" else None
 REPO = Path(__file__).resolve().parents[1]
 
 
@@ -126,11 +141,10 @@ def pack_model(src: Path, out: Path, classes=("linear", "embed"), chunk: int = C
             weight_map.update({n: shard.name for n in names})
         w.close()
 
-    config = json.loads((src / "config.json").read_text())
-    config["quantization_config"] = quant(version)
-    (out / "config.json").write_text(json.dumps(config, indent=2) + "\n")
+    # config.json stays the original model's: the Binade marker lives in binade_pack.json (pack_meta),
+    # so the Hugging Face Hub does not take a Binade checkpoint for a quantization of its base model
     for f in src.iterdir():
-        if f.is_file() and not f.name.endswith(".safetensors") and f.name not in ("config.json", "model.safetensors.index.json"):
+        if f.is_file() and not f.name.endswith(".safetensors") and f.name != "model.safetensors.index.json":
             shutil.copy(f, out / f.name)
     files = sorted(set(weight_map.values()))
     total = sum((out / f).stat().st_size for f in files)

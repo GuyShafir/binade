@@ -4,9 +4,9 @@
   "repo_id": "google/gemma-4-E4B-it",
   "revision": "ee0ef6023621cff504d758262d4e04895a5af4a2"
  },
- "packed": "models/gemma-4-E4B-it-binade",
+ "packed": "models/gemma-4-E4B-it-binade-v2",
  "git": {
-  "commit": "3fc132493c9e36b5e855e2c877ad4ee280566692",
+  "commit": "df77a491fac743476f817e02544f56fffa38e65b",
   "dirty": false
  },
  "mlx": "0.32.2",
@@ -17,9 +17,11 @@
  },
  "args": {
   "original": "google/gemma-4-E4B-it",
-  "packed": "models/gemma-4-E4B-it-binade",
+  "packed": "models/gemma-4-E4B-it-binade-v2",
   "q8": "True",
   "fused": "True",
+  "reordered": "False",
+  "reference": "resident",
   "windows": "32",
   "window_tokens": "512",
   "prompts": "32",
@@ -38,9 +40,9 @@
    "generations_identical": 32,
    "tokens_identical": 1.0,
    "mean_first_divergence": null,
-   "windows_s": 21.638268583003082,
-   "gen_s": 109.81720800000039,
-   "peak_gb": 16.475062918
+   "windows_s": 24.54325637500733,
+   "gen_s": 96.53947550000157,
+   "peak_gb": 15.587447962
   },
   "binade": {
    "positions": 16352,
@@ -52,9 +54,9 @@
    "generations_identical": 32,
    "tokens_identical": 1.0,
    "mean_first_divergence": null,
-   "windows_s": 25.402972666001006,
-   "gen_s": 100.87340812500042,
-   "peak_gb": 15.072184328
+   "windows_s": 21.476199666969478,
+   "gen_s": 108.22262391599361,
+   "peak_gb": 14.86287441
   },
   "binade_fused": {
    "positions": 16352,
@@ -66,9 +68,9 @@
    "generations_identical": 32,
    "tokens_identical": 1.0,
    "mean_first_divergence": null,
-   "windows_s": 24.047673124994617,
-   "gen_s": 108.4520569170054,
-   "peak_gb": 14.008935616
+   "windows_s": 24.280143750016578,
+   "gen_s": 100.19172962498851,
+   "peak_gb": 13.294008646
   },
   "q8": {
    "positions": 16352,
@@ -80,8 +82,8 @@
    "generations_identical": 0,
    "tokens_identical": 0.34375,
    "mean_first_divergence": 25.321428571428573,
-   "windows_s": 20.61233183299919,
-   "gen_s": 64.49805241700233,
+   "windows_s": 20.105500707984902,
+   "gen_s": 61.039916625013575,
    "peak_gb": 14.96708526
   }
  }

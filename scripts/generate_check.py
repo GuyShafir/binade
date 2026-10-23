@@ -85,7 +85,9 @@ def main():
 
     results = {}
     stem = "generate_check" if args.runtime == "slow" else f"generate_check_{args.runtime}"
-    version = str(json.loads((args.packed / "config.json").read_text())["quantization_config"]["version"])
+    from binade.pack import pack_meta
+
+    version = str(pack_meta(args.packed)["version"])
     if version != "1":
         stem += f"_v{version}"
     loaders = {"slow": binade_load, "r4": r4_load}

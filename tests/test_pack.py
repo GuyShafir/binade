@@ -8,7 +8,7 @@ import pytest
 from safetensors import safe_open
 
 from binade import st
-from binade.pack import pack_model
+from binade.pack import pack_meta, pack_model, quant
 from binade.unpack import PackedModel
 
 
@@ -61,8 +61,14 @@ def test_pack_roundtrip_bit_exact(tmp_path, version, gpu):
     assert f"model.layers.0.experts.gate_up_proj.{'idx' if version == '1' else 'bits'}" in keys
     loaded = mx.load(str(out / "model.safetensors"))
     assert loaded["model.layers.0.experts.gate_up_proj.raw"].shape == (4, 256, 256)
-    config = json.loads((out / "config.json").read_text())
-    assert config["quantization_config"]["quant_method"] == "binade" and config["quantization_config"]["version"] == version
+    # config.json is the original's; the marker is in binade_pack.json, and older packs that carry it
+    # in config.json's quantization_config are still recognized
+    assert (out / "config.json").read_bytes() == (src / "config.json").read_bytes()
+    assert pack_meta(out) == quant(version)
+    old = tmp_path / "old_style"
+    old.mkdir()
+    (old / "config.json").write_text(json.dumps({**json.loads((src / "config.json").read_text()), "quantization_config": quant(version)}))
+    assert pack_meta(old) == quant(version) and pack_meta(src) is None
     index = json.loads((out / "model.safetensors.index.json").read_text())
     assert set(index["weight_map"]) == keys
     assert (out / "tokenizer.json").exists() and (out / "binade_pack.json").exists()
