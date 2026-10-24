@@ -64,7 +64,7 @@ pip install -e ".[dev,eval,figures]"                  # add cuda on Linux: ".[de
 
 ## Use
 
-Load a published Binade model straight from the Hugging Face Hub: the [Binade](https://huggingface.co/Binade) organization has Gemma 4 E4B, 12B and 26B-A4B, Qwen3.5 9B and Llama 3.1 8B Instruct. Or pack one yourself from the Hugging Face cache or a local directory:
+Load a published Binade model straight from the Hugging Face Hub: the [Binade](https://huggingface.co/Binade) organization has Gemma 4 E4B, 12B, 26B-A4B and 31B, Qwen3.5 9B and Llama 3.1 8B Instruct. Or pack one yourself from the Hugging Face cache or a local directory:
 
 ```
 hf download google/gemma-4-12B-it
