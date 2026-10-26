@@ -64,7 +64,7 @@ pip install -e ".[dev,eval,figures]"                  # add cuda on Linux: ".[de
 
 ## Use
 
-Load a published Binade model straight from the Hugging Face Hub: the [Binade](https://huggingface.co/Binade) organization has Gemma 4 E4B, 12B, 26B-A4B and 31B, Qwen3.5 9B and Llama 3.1 8B Instruct. Or pack one yourself from the Hugging Face cache or a local directory:
+Load a published Binade model straight from the Hugging Face Hub: the [Binade](https://huggingface.co/Binade) organization has Gemma 4 E4B, 12B, 26B-A4B and 31B, Qwen3.5 9B, and Llama 3.1 8B and 3.2 3B Instruct. Or pack one yourself from the Hugging Face cache or a local directory:
 
 ```
 hf download google/gemma-4-12B-it
@@ -100,7 +100,7 @@ Result files record the commit of the development repository that produced them;
 ## Limitations
 
 - **Tied to MLX's internals.** Exactness relies on MLX 0.32.2's kernels and dispatch rules. A different MLX version or GPU generation can change the summation order, and the tests would catch it. The fused GEMM is enabled only on M3 and M4 GPUs.
-- **Validated models.** Gemma 4 12B, E4B and 26B-A4B, Llama 3.1 8B and Qwen3.5 9B: bit-identical to BF16 at every one of 16,352 WikiText-2 positions per model, and in greedy generation (`results/*/exactness_scale.md`).
+- **Validated models.** Gemma 4 12B, E4B and 26B-A4B, Llama 3.1 8B, Llama 3.2 3B and Qwen3.5 9B: bit-identical to BF16 at every one of 16,352 WikiText-2 positions per model, and in greedy generation (`results/*/exactness_scale.md`). Gemma 4 31B the same on NVIDIA (`results/cuda/gemma-4-31B-it/exactness_scale.md`).
 - **E-models.** Gemma 4 E-models keep their per-layer embedding tables in BF16.
 - **Prompt processing.** Prefill at 32 to 128 prompt rows runs at 0.77 to 0.90x BF16. On long prompts, a model without memory headroom for rebuilding weights runs the fused GEMM at 0.75x the speed of MLX's.
 - **Quantization is faster.** Lossy 8-bit quantization is faster and smaller; Binade's case is exactness.

@@ -1,0 +1,49 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--unsloth--Llama-3.2-3B-Instruct/snapshots/006f5dcd1393c3add266de40994ba96225e9689d",
+  "repo_id": "unsloth/Llama-3.2-3B-Instruct",
+  "revision": "006f5dcd1393c3add266de40994ba96225e9689d"
+ },
+ "packed": "models/Llama-3.2-3B-Instruct-binade",
+ "git": {
+  "commit": "bae35471ba80e8029ac807495c308a16463e9a29",
+  "dirty": false
+ },
+ "mlx": "0.32.2",
+ "device": "Apple M4 Max",
+ "device_memory_gb": 51.539607552,
+ "args": {
+  "original": "unsloth/Llama-3.2-3B-Instruct",
+  "packed": "models/Llama-3.2-3B-Instruct-binade",
+  "variants": "bf16,binade_r4,q8",
+  "tokens": "128",
+  "timeout": "1500",
+  "out": "None"
+ },
+ "variants": [
+  {
+   "variant": "bf16",
+   "load_s": 1.6458427499746904,
+   "resident_gb": 6.425501,
+   "tok_s": 69.58093856841239,
+   "peak_gb": 6.524123484,
+   "ok": true
+  },
+  {
+   "variant": "binade_r4",
+   "load_s": 3.6436295000603423,
+   "resident_gb": 4.849861349,
+   "tok_s": 89.07391199153085,
+   "peak_gb": 5.371668453,
+   "ok": true
+  },
+  {
+   "variant": "q8",
+   "load_s": 1.3329005419509485,
+   "resident_gb": 3.413728584,
+   "tok_s": 124.54969566981444,
+   "peak_gb": 4.201733448,
+   "ok": true
+  }
+ ]
+}

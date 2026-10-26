@@ -28,11 +28,15 @@ from binade import st
 REPO = Path(__file__).resolve().parents[1]
 RES = REPO / "results"
 GITHUB = "https://github.com/GuyShafir/binade"
-# Llama 3.1's license asks a redistribution for a copy of it, the acceptable use policy it
-# incorporates, and this notice in a "Notice" text file. Meta's model repository is gated, so the
-# texts come from Meta's public llama-models repository.
-LLAMA31 = "https://raw.githubusercontent.com/meta-llama/llama-models/main/models/llama3_1/"
-LLAMA31_NOTICE = "Llama 3.1 is licensed under the Llama 3.1 Community License, Copyright \u00a9 Meta Platforms, Inc. All Rights Reserved.\n"
+# Llama 3.1's and 3.2's licenses ask a redistribution for a copy of the license, the acceptable
+# use policy it incorporates, and an attribution notice in a "Notice" text file. Meta's model
+# repositories are gated, so the texts come from Meta's public llama-models repository.
+LLAMA = {"llama3.1": "3.1", "llama3.2": "3.2"}
+LLAMA_TEXTS = "https://raw.githubusercontent.com/meta-llama/llama-models/main/models/llama{}/"
+
+
+def llama_notice(version: str) -> str:
+    return f"Llama {version} is licensed under the Llama {version} Community License, Copyright \u00a9 Meta Platforms, Inc. All Rights Reserved.\n"
 
 
 def j(path: Path):
@@ -89,10 +93,10 @@ def license_files(orig: str, license: str, stage: Path) -> list[str]:
     """Copies into the stage the files the base model's license asks a redistribution to carry."""
     from huggingface_hub import hf_hub_download, list_repo_files
 
-    if license == "llama3.1":
+    if license in LLAMA:
         for name in ("LICENSE", "USE_POLICY.md"):
-            urllib.request.urlretrieve(LLAMA31 + name, stage / name)
-        (stage / "NOTICE").write_text(LLAMA31_NOTICE)
+            urllib.request.urlretrieve(LLAMA_TEXTS.format(LLAMA[license].replace(".", "_")) + name, stage / name)
+        (stage / "NOTICE").write_text(llama_notice(LLAMA[license]))
         return ["LICENSE", "USE_POLICY.md", "NOTICE"]
     names = [n for n in list_repo_files(orig) if n in ("LICENSE", "LICENSE.txt", "LICENSE.md", "NOTICE")]
     for n in names:
@@ -115,7 +119,7 @@ def card(base: str, orig: str, repo: str, name: str, model: str, meta: dict, pac
     from huggingface_hub import model_info
 
     cd = model_info(orig).card_data or {}
-    llama = cd.get("license") == "llama3.1"
+    llama = LLAMA.get(cd.get("license"))
     license_link = "LICENSE" if "LICENSE" in licensed else cd.get("license_link")
     rt_path = roundtrip(model)
     rt = j(rt_path)
@@ -220,7 +224,7 @@ def card(base: str, orig: str, repo: str, name: str, model: str, meta: dict, pac
         "## License",
         "",
         *([
-            "Built with Llama. " + LLAMA31_NOTICE.strip(),
+            "Built with Llama. " + llama_notice(llama).strip(),
             "",
             "This repository carries the [license](LICENSE), Meta's [acceptable use policy](USE_POLICY.md) and the [notice](NOTICE). "
             "Use of these weights follows both, as use of the original weights does. Binade itself is Apache-2.0.",

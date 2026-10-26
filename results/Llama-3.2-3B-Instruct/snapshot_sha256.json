@@ -1,0 +1,14 @@
+{
+ "repo": "unsloth/Llama-3.2-3B-Instruct",
+ "revision": "006f5dcd1393c3add266de40994ba96225e9689d",
+ "files": {
+  "model-00001-of-00002.safetensors": "13cbd6d16e927a0c5bad54102514e6e18b4a47b3a6eb911e39d678d328d19f55",
+  "model-00002-of-00002.safetensors": "7b770216613ac5c34d7c54bdff1fa616bc4e338a9d0b20af6303e48c295ee23c"
+ },
+ "matches_hub": true,
+ "same_as": {
+  "repo": "meta-llama/Llama-3.2-3B-Instruct",
+  "revision": "0cb88a4f764b7a12671c53f0838cd831a0843b95",
+  "identical": true
+ }
+}
