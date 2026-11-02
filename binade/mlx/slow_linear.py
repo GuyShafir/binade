@@ -148,11 +148,14 @@ class BinadeLinear(nn.Module):
 
 class BinadeEmbedding(nn.Module):
     """Drop-in for nn.Embedding: lookups decode only the chunks holding the requested rows;
-    the tied output projection (as_linear) decodes the whole table."""
+    the tied output projection (as_linear) decodes the whole table. gather_only marks a table
+    that never enters a matmul (Gemma's per-layer embedding tables, the `ple` class), which
+    the R4 runtime then keeps in its file coding (r4.RiceEmbedding)."""
 
-    def __init__(self, spec: dict):
+    def __init__(self, spec: dict, gather_only: bool = False):
         super().__init__()
         self.weight = _placeholders(spec)
+        self.gather_only = gather_only
         self._plan = None
 
     def __call__(self, ids: mx.array) -> mx.array:

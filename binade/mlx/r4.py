@@ -11,6 +11,11 @@ raw bytes plus about 4.06 bits per weight.
 Single-row inputs (batch-1 decode) run the R4 kernel, whose outputs are bit-identical to
 MLX's BF16 matvec. Multi-row inputs (prompt processing) rebuild the BF16 weight with the
 R4 decode kernel and call MLX's matmul, bit-identical by construction.
+
+A gather-only table (Gemma 4 E-models' per-layer embedding tables, `embed_tokens_per_layer`,
+the model's largest tensor) never enters a matmul, so it needs no R4 layout: a format 2 table
+stays in its Rice coding in memory (RiceEmbedding) and the Rice kernel decodes the rows a
+lookup asks for.
 """
 
 import re
@@ -320,13 +325,56 @@ class R4Embedding(nn.Module, _R4):
         return self._rows(x)
 
 
+class RiceEmbedding(nn.Module):
+    """Gather-only table kept in Binade format 2 (Rice) in memory, about 10.7 bits per weight
+    resident instead of R4's 12.07. A lookup gathers the rows' tiles and word offsets and runs
+    the Rice decode kernel on just those rows, lazily (no host sync), then joins exponents with
+    the raw bytes. No as_linear: the table never enters a matmul."""
+
+    def __init__(self, w: dict):
+        super().__init__()
+        raw = w["raw"]
+        self.K = raw.shape[-1]
+        self.N = raw.size // self.K
+        self.T = -(-self.K // TILE)
+        if w["meta"].size != self.N * self.T or w["roff"].size != self.N:
+            raise ValueError(f"{w['meta'].size} tiles and {w['roff'].size} row offsets for {self.N} x {self.K}")
+        self._a = {
+            "raw": raw.reshape(self.N, self.K),
+            "table": w["table"],
+            "meta": w["meta"].reshape(self.N, self.T),
+            "bits": w["bits"] if w["bits"].size else mx.zeros((1,), dtype=mx.uint32),
+            "roff": w["roff"],
+            "shape": tuple(raw.shape),
+        }
+
+    def __call__(self, ids: mx.array) -> mx.array:
+        a = self._a
+        flat = ids.reshape(-1).astype(mx.uint32)
+        rank, _ = rice_ranks(a["meta"][flat].reshape(-1), a["bits"], a["roff"][flat], self.K)
+        e = a["table"][rank[:, : self.K]].astype(mx.uint16)
+        r = a["raw"][flat].astype(mx.uint16)
+        out = (((r & 0x80) << 8) | (e << 7) | (r & 0x7F)).view(mx.bfloat16)
+        return out.reshape(*ids.shape, self.K)
+
+    def dense(self) -> mx.array:
+        """The BF16 table, decoded in row chunks."""
+        step = max(1, CHUNK // self.K)
+        rows = []
+        for r0 in range(0, self.N, step):
+            rows.append(self(mx.arange(r0, min(self.N, r0 + step), dtype=mx.uint32)))
+            mx.eval(rows[-1])
+        return (rows[0] if len(rows) == 1 else mx.concatenate(rows)).reshape(self._a["shape"])
+
+
 def _evaluated(a: dict) -> dict:
     mx.eval(a["raw"], a["codes"], a["flags"], a["esc"], a["row_esc"])
     return a
 
 
 def convert(model: nn.Module, log=None) -> int:
-    """Swap every v1 module for its R4 counterpart in place; returns how many were converted.
+    """Swap every file-array module for its runtime counterpart in place (R4, or RiceEmbedding
+    for a gather-only format 2 table); returns how many were converted.
     Holds only paths between swaps, so each v1 module is freed as soon as it is replaced."""
     paths = [path for path, m in model.named_modules() if isinstance(m, (BinadeLinear, BinadeEmbedding, BinadeSwitchGLU))]
 
@@ -344,6 +392,9 @@ def convert(model: nn.Module, log=None) -> int:
             gu, dn = (R4Linear(_evaluated(transcode(h))) for h in holders(m))
             new = R4SwitchGLU(gu, dn, m._activation)
             del gu, dn
+        elif isinstance(m, BinadeEmbedding) and m.gather_only and "bits" in m.weight:
+            new = RiceEmbedding(m.weight)
+            mx.eval(*new._a.values())
         else:
             a = _evaluated(transcode(m))
             new = R4Embedding(a) if isinstance(m, BinadeEmbedding) else R4Linear(a)

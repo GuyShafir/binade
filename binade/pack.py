@@ -1,6 +1,6 @@
 """Binade packer: BF16 safetensors model -> Binade model (DESIGN.md 10, 6, 7).
 
-    binade pack <model-dir | cached-hf-repo-id> --out DIR [--format 2|1] [--revision REV] [--classes linear,embed]
+    binade pack <model-dir | cached-hf-repo-id> --out DIR [--format 2|1] [--revision REV] [--classes linear,embed,ple]
 
 Streams one tensor at a time. A packed weight `name` becomes name.raw (sign + mantissa,
 original shape), name.table and the exponent coding: format 1 (binade/format.py)
@@ -24,6 +24,7 @@ from . import rice
 from .format import TILE, encode, rank_table
 
 VERSION = "2"  # default format: Rice (smaller, faster to load); "1" for the slow runtime
+CLASSES = ("linear", "embed", "ple")  # packed by default: everything on the text decode path (binade/classify.py)
 CHUNK = 1 << 24  # weights per read
 PARTS = {"1": ("raw", "table", "meta", "idx", "esc"), "2": ("raw", "table", "meta", "bits", "roff")}
 SUFFIXES = PARTS[VERSION]
@@ -113,7 +114,7 @@ def _reserve(infos, classes, metadata) -> int:
     return n + len(json.dumps(metadata)) + 4096
 
 
-def pack_model(src: Path, out: Path, classes=("linear", "embed"), chunk: int = CHUNK, log=print, version: str = VERSION) -> dict:
+def pack_model(src: Path, out: Path, classes=CLASSES, chunk: int = CHUNK, log=print, version: str = VERSION) -> dict:
     if version not in PARTS:
         raise ValueError(f"unknown Binade format {version!r}")
     t0 = time.perf_counter()
@@ -172,7 +173,7 @@ def main():
     ap.add_argument("model")
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--revision")
-    ap.add_argument("--classes", default="linear,embed")
+    ap.add_argument("--classes", default=",".join(CLASSES))
     ap.add_argument("--format", default=VERSION, choices=sorted(PARTS), help="1: fixed width with escapes; 2: Rice (smaller, decoded to R4 at load)")
     args = ap.parse_args()
     r = pack_model(st.resolve(args.model, args.revision), args.out, tuple(args.classes.split(",")), version=args.format)

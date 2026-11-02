@@ -27,6 +27,7 @@ from mlx.utils import tree_flatten, tree_unflatten
 from mlx_lm.utils import _get_classes, load_model, load_tokenizer
 
 from .. import st
+from ..classify import classify
 from ..pack import PARTS, pack_meta
 from .moe import BinadeSwitchGLU
 from .slow_linear import BinadeEmbedding, BinadeLinear
@@ -101,7 +102,7 @@ def swap_modules(model: nn.Module, specs: dict, sanitize=lambda w: w) -> list[st
             unused.append(name)
             continue
         if isinstance(old, nn.Embedding):
-            new = BinadeEmbedding(specs[name])
+            new = BinadeEmbedding(specs[name], gather_only=classify(name, tuple(specs[name]["raw"][0]), "BF16").cls == "ple")
         elif isinstance(old, nn.Linear):
             new = BinadeLinear(specs[name], bias="bias" in old)
         else:

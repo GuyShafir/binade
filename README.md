@@ -18,6 +18,8 @@ Apple M4 Max, 48 GB, MLX 0.32.2. Every number comes from a script in `scripts/`;
 | Gemma 4 12B greedy decode | 19.15 tok/s | 24.66 tok/s | **1.29x**, identical tokens ([decode_speed](results/gemma-4-12B-it/decode_speed.md)) |
 | Gemma 4 12B exactness | | | prompt logits over the full vocabulary and 256 greedy tokens identical ([generate_check](results/gemma-4-12B-it/generate_check_r4_v2_binade_first.md)) |
 | Gemma 4 26B-A4B checkpoint | 51.61 GB | 35.05 GB | BF16 does not load on a 48 GB Mac ([roundtrip_v2](results/gemma-4-26B-A4B-it/roundtrip_v2.md)) |
+| Gemma 4 E4B checkpoint | 15.99 GB | 11.05 GB | every table packed, including the 2.8B-weight per-layer embedding table; Google's 4-bit QAT checkpoint (w4a16, that table left in 16-bit) is 11.51 GB ([roundtrip_v2](results/gemma-4-E4B-it/roundtrip_v2.md)) |
+| Gemma 4 E4B resident after load | 14.93 GB | 10.79 GB | the per-layer table stays in its Rice coding in memory; logits at all 16,352 positions and 32 of 32 generations identical ([fit_probe](results/gemma-4-E4B-it/fit_probe.md), [exactness_scale](results/gemma-4-E4B-it/exactness_scale.md)) |
 | Gemma 4 26B-A4B decode | n/a | 58.8 tok/s | 40-token prompt in 0.32 s, logits and 64 tokens identical to BF16 ([decode_speed](results/gemma-4-26B-A4B-it/decode_speed.md), [generate_check](results/gemma-4-26B-A4B-it/generate_check_r4_v2_streamed_binade_first.md)) |
 
 The 26B exactness check compares against a BF16 reference that reads one layer at a time from disk, since BF16 does not fit in memory.
@@ -41,7 +43,7 @@ Multi-row products in MLX's CUDA backend go to cuBLAS, which is closed. Its BF16
 
 - **No exponent locality.** Neighbouring weights do not share exponents: per-tile palettes gain only 0.011 to 0.027 bits per weight over a shuffled tensor on four models ([comparison](results/comparison.md)). Binade therefore codes frequency ranks from one table per tensor.
 - **Two file formats.** Format 1 uses fixed width per 128-weight tile with escapes (11.27 bits per weight). Format 2, the default, uses Rice codes (10.75 bits per weight).
-- **Runtime layout.** At load a GPU kernel turns either format into R4: every rank in 4 bits, with rare escapes. R4 takes 12.07 bits per weight in memory, and its matvec streams at full bandwidth.
+- **Runtime layout.** At load a GPU kernel turns either format into R4: every rank in 4 bits, with rare escapes. R4 takes 12.07 bits per weight in memory, and its matvec streams at full bandwidth. A table that only ever feeds lookups (Gemma 4 E-models' per-layer embedding table) stays in its Rice coding in memory, and the Rice kernel decodes the rows each lookup asks for.
 - **Exactness.** The matvec, the MoE expert gather and the GEMM mirror MLX's own kernels step for step. Where they cannot, the runtime rebuilds the BF16 weight and calls MLX, which is exact by construction.
 
 [DESIGN.md](DESIGN.md) has the formats, the runtime layout and the exactness argument.
@@ -101,7 +103,7 @@ Result files record the commit of the development repository that produced them;
 
 - **Tied to MLX's internals.** Exactness relies on MLX 0.32.2's kernels and dispatch rules. A different MLX version or GPU generation can change the summation order, and the tests would catch it. The fused GEMM is enabled only on M3 and M4 GPUs.
 - **Validated models.** Gemma 4 12B, E4B and 26B-A4B, Llama 3.1 8B, Llama 3.2 3B and Qwen3.5 9B: bit-identical to BF16 at every one of 16,352 WikiText-2 positions per model, and in greedy generation (`results/*/exactness_scale.md`). Gemma 4 31B the same on NVIDIA (`results/cuda/gemma-4-31B-it/exactness_scale.md`).
-- **E-models.** Gemma 4 E-models keep their per-layer embedding tables in BF16.
+- **E-models.** The vision and audio towers of Gemma 4 E-models stay in BF16 (they are not on the text decode path); every text-side tensor is packed.
 - **Prompt processing.** Prefill at 32 to 128 prompt rows runs at 0.77 to 0.90x BF16. On long prompts, a model without memory headroom for rebuilding weights runs the fused GEMM at 0.75x the speed of MLX's.
 - **Quantization is faster.** Lossy 8-bit quantization is faster and smaller; Binade's case is exactness.
 - **CUDA.** Decoding runs at 1.01 to 1.10x BF16; prompts take longer (1.3x BF16's time to the first token after 40 tokens on the RTX PRO 6000). The fused prompt kernels cover dense products up to 128 rows and every expert product, on the RTX PRO 6000, L4 and A100; longer dense prompts, and dense prompts on other GPUs, rebuild BF16 weights for cuBLAS.

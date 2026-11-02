@@ -121,6 +121,7 @@ The dispatch conditions follow MLX 0.32.2 (`mlx/backend/metal/matmul.cpp`, `mlx/
 - `binade unpack` rebuilds the BF16 checkpoint. `scripts/roundtrip_test.py` checks every tensor bit for bit.
 - The slow runtime (`binade/mlx/slow_linear.py`, format 1 only) rebuilds each weight with MLX array operations for every call. It is the kernel-free reference.
 - The R4 runtime (`binade/mlx/r4.py`) is the fast path: `binade.mlx.r4.load(path)` returns an mlx-lm model and tokenizer.
+- A gather-only table (Gemma 4 E-models' `embed_tokens_per_layer`, the `ple` class and the E4B's largest tensor) never enters a matmul, so the R4 runtime keeps a format 2 table in its Rice coding in memory (`r4.RiceEmbedding`, about 10.7 bits per weight resident) and runs the Rice decode kernel on just the rows a lookup asks for, lazily. Format 1 tables take the R4 layout like any embedding.
 - The loader wraps mlx-lm's model class rather than patching it. It runs the model's own `sanitize` on placeholders to find which module each packed weight belongs to, and drops checkpoint tensors that have no model parameter (recorded in the result files).
 
 ## 11. Lossy dial (reported, not implemented)
