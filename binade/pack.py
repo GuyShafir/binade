@@ -1,6 +1,6 @@
 """Binade packer: BF16 safetensors model -> Binade model (DESIGN.md 10, 6, 7).
 
-    binade pack <model-dir | cached-hf-repo-id> --out DIR [--format 2|1] [--revision REV] [--classes linear,embed,ple]
+    binade pack <model-dir | cached-hf-repo-id> --out DIR [--format 2|1] [--revision REV] [--classes linear,embed,ple,mm]
 
 Streams one tensor at a time. A packed weight `name` becomes name.raw (sign + mantissa,
 original shape), name.table and the exponent coding: format 1 (binade/format.py)
@@ -19,12 +19,12 @@ from pathlib import Path
 import numpy as np
 
 from . import bf16, st
-from .classify import classify
+from .classify import MIN_DIM, classify
 from . import rice
 from .format import TILE, encode, rank_table
 
 VERSION = "2"  # default format: Rice (smaller, faster to load); "1" for the slow runtime
-CLASSES = ("linear", "embed", "ple")  # packed by default: everything on the text decode path (binade/classify.py)
+CLASSES = ("linear", "embed", "ple", "mm")  # packed by default: the text decode path and the vision/audio towers (binade/classify.py); the runtime serves text, so mm tensors are only ever unpacked
 CHUNK = 1 << 24  # weights per read
 PARTS = {"1": ("raw", "table", "meta", "idx", "esc"), "2": ("raw", "table", "meta", "bits", "roff")}
 SUFFIXES = PARTS[VERSION]
@@ -55,8 +55,13 @@ REPO = Path(__file__).resolve().parents[1]
 
 
 def packable(info: st.TensorInfo, classes) -> bool:
+    """BF16, 2-D or 3-D, in a requested class. Vision/audio tensors (mm) are packed only at
+    linear-weight sizes: a depthwise 1-D convolution such as [1024, 1, 5] codes at over 16 bits
+    per weight (a table and a tile header per 5-weight row)."""
     k = classify(info.name, info.shape, info.dtype)
-    return info.dtype == "BF16" and len(info.shape) in (2, 3) and k.cls in classes
+    if info.dtype != "BF16" or len(info.shape) not in (2, 3) or k.cls not in classes:
+        return False
+    return k.cls != "mm" or min(info.shape[-2:]) >= MIN_DIM
 
 
 def spans(info: st.TensorInfo, chunk: int = CHUNK):

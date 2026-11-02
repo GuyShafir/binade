@@ -1,0 +1,53 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-E2B-it/snapshots/3e22461f65e89153144f8adb70e3b8c2cc9845a7",
+  "repo_id": "google/gemma-4-E2B-it",
+  "revision": "3e22461f65e89153144f8adb70e3b8c2cc9845a7"
+ },
+ "packed": "models/gemma-4-E2B-it-binade",
+ "git": {
+  "commit": "d0315fd9775debc3e115513816d63749fea91fc6",
+  "dirty": false
+ },
+ "pack_git": "d0315fd9775debc3e115513816d63749fea91fc6",
+ "binade": {
+  "quant_method": "binade",
+  "version": "2",
+  "tile": 128
+ },
+ "tensors_checked": 2011,
+ "tensors_packed": 568,
+ "missing": [],
+ "extra": [],
+ "mismatched_elements": 0,
+ "input_bytes": 10246621918,
+ "output_bytes": 6843499190,
+ "classes": {
+  "mm": {
+   "tensors": 250,
+   "numel": 475463680,
+   "bits": 4853014528,
+   "bits_per_weight": 10.206909028256375
+  },
+  "embed": {
+   "tensors": 1,
+   "numel": 402653184,
+   "bits": 4325288704,
+   "bits_per_weight": 10.741970698038736
+  },
+  "ple": {
+   "tensors": 1,
+   "numel": 2348810240,
+   "bits": 25142928288,
+   "bits_per_weight": 10.704537922995431
+  },
+  "linear": {
+   "tensors": 316,
+   "numel": 1895694336,
+   "bits": 20409995296,
+   "bits_per_weight": 10.766501175007994
+  }
+ },
+ "pack_seconds": 286.08787404105533,
+ "check_seconds": 13.508283499977551
+}

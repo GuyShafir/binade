@@ -156,7 +156,7 @@ def load_packed_model(path, lazy: bool = True):
     return model, config
 
 
-def load(path, lazy: bool = True, cache_limit_gb: float | None = 8):
+def load(path, lazy: bool = True, cache_limit_gb: float | None = 8, tokenizer_config: dict | None = None):
     """(model, tokenizer, dropped checkpoint tensors) for a Binade-packed model: a directory, a
     cached HF repo id, or an HF repo id to download (st.fetch).
 
@@ -168,7 +168,7 @@ def load(path, lazy: bool = True, cache_limit_gb: float | None = 8):
         mx.set_cache_limit(int(cache_limit_gb * (1 << 30)))
     path = st.fetch(str(path))
     model, config = load_packed_model(path, lazy)
-    tok = load_tokenizer(Path(path), eos_token_ids=config.get("eos_token_id", None))
+    tok = load_tokenizer(Path(path), tokenizer_config, eos_token_ids=config.get("eos_token_id", None))
     return model, tok, config["binade_dropped"]
 
 

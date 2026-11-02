@@ -1,0 +1,49 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--Qwen--Qwen3.5-4B/snapshots/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+  "repo_id": "Qwen/Qwen3.5-4B",
+  "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+ },
+ "packed": "models/Qwen3.5-4B-binade",
+ "git": {
+  "commit": "75812668afc8886cc73891fec2416d32efee8c44",
+  "dirty": false
+ },
+ "mlx": "0.32.2",
+ "device": "Apple M4 Max",
+ "device_memory_gb": 51.539607552,
+ "args": {
+  "original": "Qwen/Qwen3.5-4B",
+  "packed": "models/Qwen3.5-4B-binade",
+  "variants": "bf16,binade_r4,q8",
+  "tokens": "40",
+  "timeout": "1500",
+  "out": "None"
+ },
+ "variants": [
+  {
+   "variant": "bf16",
+   "load_s": 0.5472089580725878,
+   "resident_gb": 8.41151028,
+   "tok_s": 52.17558883814688,
+   "peak_gb": 8.543855346,
+   "ok": true
+  },
+  {
+   "variant": "binade_r4",
+   "load_s": 4.301197540946305,
+   "resident_gb": 6.352906623,
+   "tok_s": 65.90273238783645,
+   "peak_gb": 6.878770209,
+   "ok": true
+  },
+  {
+   "variant": "q8",
+   "load_s": 0.9324439170304686,
+   "resident_gb": 4.469536264,
+   "tok_s": 90.69561710156036,
+   "peak_gb": 5.740934666,
+   "ok": true
+  }
+ ]
+}

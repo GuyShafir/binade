@@ -410,7 +410,7 @@ def convert(model: nn.Module, log=None) -> int:
     return len(paths)
 
 
-def load(path, log=None, cache_limit_gb: float = 2, wire: bool = True):
+def load(path, log=None, cache_limit_gb: float = 2, wire: bool = True, tokenizer_config: dict | None = None):
     """(model, tokenizer, dropped) for a Binade model, converted to the R4 runtime.
 
     Caps MLX's buffer cache (global) at cache_limit_gb: decoding needs only small buffers,
@@ -424,7 +424,7 @@ def load(path, log=None, cache_limit_gb: float = 2, wire: bool = True):
     if wire and not CUDA and mx.metal.is_available():
         mx.set_wired_limit(int(mx.device_info()["max_recommended_working_set_size"]))
 
-    model, tokenizer, dropped = load_v1(path, cache_limit_gb=cache_limit_gb)
+    model, tokenizer, dropped = load_v1(path, cache_limit_gb=cache_limit_gb, tokenizer_config=tokenizer_config)
     convert(model, log)
     mx.clear_cache()
     return model, tokenizer, dropped

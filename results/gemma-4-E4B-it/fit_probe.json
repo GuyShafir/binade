@@ -4,9 +4,9 @@
   "repo_id": "google/gemma-4-E4B-it",
   "revision": "ee0ef6023621cff504d758262d4e04895a5af4a2"
  },
- "packed": "models/gemma-4-E4B-it-binade-ple",
+ "packed": "models/gemma-4-E4B-it-binade-all",
  "git": {
-  "commit": "90326ada69629063559befe059cd744e92dd3bec",
+  "commit": "d0315fd9775debc3e115513816d63749fea91fc6",
   "dirty": false
  },
  "mlx": "0.32.2",
@@ -14,7 +14,7 @@
  "device_memory_gb": 51.539607552,
  "args": {
   "original": "google/gemma-4-E4B-it",
-  "packed": "models/gemma-4-E4B-it-binade-ple",
+  "packed": "models/gemma-4-E4B-it-binade-all",
   "variants": "bf16,binade_r4,q8",
   "tokens": "40",
   "timeout": "1500",
@@ -23,25 +23,25 @@
  "variants": [
   {
    "variant": "bf16",
-   "load_s": 4.08256808295846,
+   "load_s": 4.071026291931048,
    "resident_gb": 14.926026956,
-   "tok_s": 44.551533172482564,
+   "tok_s": 44.98420107268704,
    "peak_gb": 15.002406096,
    "ok": true
   },
   {
    "variant": "binade_r4",
-   "load_s": 7.165597792016342,
+   "load_s": 6.831248249975033,
    "resident_gb": 10.788187252,
-   "tok_s": 54.494172460885686,
+   "tok_s": 55.65174930993469,
    "peak_gb": 11.350283296,
    "ok": true
   },
   {
    "variant": "q8",
-   "load_s": 4.491546166012995,
+   "load_s": 4.316415666951798,
    "resident_gb": 7.932713164,
-   "tok_s": 76.11785055715286,
+   "tok_s": 76.93131735237493,
    "peak_gb": 14.96708526,
    "ok": true
   }

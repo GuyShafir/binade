@@ -1,0 +1,53 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-E2B-it/snapshots/3e22461f65e89153144f8adb70e3b8c2cc9845a7",
+  "repo_id": "google/gemma-4-E2B-it",
+  "revision": "3e22461f65e89153144f8adb70e3b8c2cc9845a7"
+ },
+ "git": {
+  "commit": "75812668afc8886cc73891fec2416d32efee8c44",
+  "dirty": false
+ },
+ "args": {
+  "original": "google/gemma-4-E2B-it",
+  "packed": "models/gemma-4-E2B-it-binade",
+  "runs": "2",
+  "tokens": "256",
+  "cooldown": "60",
+  "out": "None",
+  "models": "bf16,binade_r4"
+ },
+ "median_tok_s": {
+  "bf16": 84.09246468149206,
+  "binade_r4": 98.953942974312
+ },
+ "speedup": 1.1767278239389125,
+ "identical_ids_all_runs": true,
+ "q8_ids_identical_to_reference": null,
+ "runs": {
+  "bf16": [
+   {
+    "tok_s": 84.48022135707738,
+    "median_ms": 11.822834028862417,
+    "peak_gb": 9.329517003
+   },
+   {
+    "tok_s": 83.70470800590675,
+    "median_ms": 11.924207909032702,
+    "peak_gb": 9.329517003
+   }
+  ],
+  "binade_r4": [
+   {
+    "tok_s": 98.91109708357286,
+    "median_ms": 10.104999993927777,
+    "peak_gb": 6.925943214
+   },
+   {
+    "tok_s": 98.99678886505114,
+    "median_ms": 10.102041065692902,
+    "peak_gb": 6.925943214
+   }
+  ]
+ }
+}

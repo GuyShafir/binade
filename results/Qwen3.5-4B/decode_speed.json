@@ -1,0 +1,53 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--Qwen--Qwen3.5-4B/snapshots/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+  "repo_id": "Qwen/Qwen3.5-4B",
+  "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+ },
+ "git": {
+  "commit": "75812668afc8886cc73891fec2416d32efee8c44",
+  "dirty": false
+ },
+ "args": {
+  "original": "Qwen/Qwen3.5-4B",
+  "packed": "models/Qwen3.5-4B-binade",
+  "runs": "2",
+  "tokens": "256",
+  "cooldown": "60",
+  "out": "None",
+  "models": "bf16,binade_r4"
+ },
+ "median_tok_s": {
+  "bf16": 52.14378125539446,
+  "binade_r4": 66.02178567203413
+ },
+ "speedup": 1.2661487924833594,
+ "identical_ids_all_runs": true,
+ "q8_ids_identical_to_reference": null,
+ "runs": {
+  "bf16": [
+   {
+    "tok_s": 51.93359377316239,
+    "median_ms": 19.249833072535694,
+    "peak_gb": 8.542603438
+   },
+   {
+    "tok_s": 52.35396873762653,
+    "median_ms": 19.108417094685137,
+    "peak_gb": 8.542603438
+   }
+  ],
+  "binade_r4": [
+   {
+    "tok_s": 65.9783329681275,
+    "median_ms": 15.159874921664596,
+    "peak_gb": 6.878770209
+   },
+   {
+    "tok_s": 66.06523837594077,
+    "median_ms": 15.138916904106736,
+    "peak_gb": 6.878770209
+   }
+  ]
+ }
+}

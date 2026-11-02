@@ -1,0 +1,49 @@
+{
+ "source": {
+  "path": "~/.cache/huggingface/hub/models--google--gemma-4-E2B-it/snapshots/3e22461f65e89153144f8adb70e3b8c2cc9845a7",
+  "repo_id": "google/gemma-4-E2B-it",
+  "revision": "3e22461f65e89153144f8adb70e3b8c2cc9845a7"
+ },
+ "packed": "models/gemma-4-E2B-it-binade",
+ "git": {
+  "commit": "75812668afc8886cc73891fec2416d32efee8c44",
+  "dirty": false
+ },
+ "mlx": "0.32.2",
+ "device": "Apple M4 Max",
+ "device_memory_gb": 51.539607552,
+ "args": {
+  "original": "google/gemma-4-E2B-it",
+  "packed": "models/gemma-4-E2B-it-binade",
+  "variants": "bf16,binade_r4,q8",
+  "tokens": "40",
+  "timeout": "1500",
+  "out": "None"
+ },
+ "variants": [
+  {
+   "variant": "bf16",
+   "load_s": 1.697932375012897,
+   "resident_gb": 9.257138878,
+   "tok_s": 86.3198372747977,
+   "peak_gb": 9.336210642,
+   "ok": true
+  },
+  {
+   "variant": "binade_r4",
+   "load_s": 4.194110541953705,
+   "resident_gb": 6.587157492,
+   "tok_s": 100.16260267437525,
+   "peak_gb": 6.925943214,
+   "ok": true
+  },
+  {
+   "variant": "q8",
+   "load_s": 2.6010957080870867,
+   "resident_gb": 4.918246078,
+   "tok_s": 137.71004523802452,
+   "peak_gb": 10.448698046,
+   "ok": true
+  }
+ ]
+}

@@ -4,9 +4,9 @@
   "repo_id": "google/gemma-4-E4B-it",
   "revision": "ee0ef6023621cff504d758262d4e04895a5af4a2"
  },
- "packed": "models/gemma-4-E4B-it-binade-ple",
+ "packed": "models/gemma-4-E4B-it-binade-all",
  "git": {
-  "commit": "90326ada69629063559befe059cd744e92dd3bec",
+  "commit": "d0315fd9775debc3e115513816d63749fea91fc6",
   "dirty": false
  },
  "mlx": "0.32.2",
@@ -17,7 +17,7 @@
  },
  "args": {
   "original": "google/gemma-4-E4B-it",
-  "packed": "models/gemma-4-E4B-it-binade-ple",
+  "packed": "models/gemma-4-E4B-it-binade-all",
   "q8": "True",
   "fused": "True",
   "reordered": "False",
@@ -40,8 +40,8 @@
    "generations_identical": 32,
    "tokens_identical": 1.0,
    "mean_first_divergence": null,
-   "windows_s": 23.313536165980622,
-   "gen_s": 93.86883150006179,
+   "windows_s": 24.249476750032045,
+   "gen_s": 103.05944791692309,
    "peak_gb": 15.587447962
   },
   "binade": {
@@ -54,8 +54,8 @@
    "generations_identical": 32,
    "tokens_identical": 1.0,
    "mean_first_divergence": null,
-   "windows_s": 20.085998042020947,
-   "gen_s": 93.10863916703966,
+   "windows_s": 19.74399879097473,
+   "gen_s": 93.69315970898606,
    "peak_gb": 13.000178218
   },
   "binade_fused": {
@@ -68,8 +68,8 @@
    "generations_identical": 32,
    "tokens_identical": 1.0,
    "mean_first_divergence": null,
-   "windows_s": 21.804360250011086,
-   "gen_s": 96.43331824999768,
+   "windows_s": 21.673888041987084,
+   "gen_s": 85.29586220800411,
    "peak_gb": 11.43131271
   },
   "q8": {
@@ -82,8 +82,8 @@
    "generations_identical": 0,
    "tokens_identical": 0.34375,
    "mean_first_divergence": 25.321428571428573,
-   "windows_s": 19.797138707945123,
-   "gen_s": 59.39529737504199,
+   "windows_s": 19.478010458056815,
+   "gen_s": 56.28926837502513,
    "peak_gb": 14.96708526
   }
  }
